@@ -157,6 +157,7 @@
     <ClCompile Include="3d\polygon.cpp" />
     <ClCompile Include="3d\vertex.cpp" />
     <ClCompile Include="3d\viewport.cpp" />
+    <ClCompile Include="camera_logic.cpp" />
     <ClCompile Include="dx\enemy.cpp" />
     <ClCompile Include="dx\polygon_dx.cpp" />
     <ClCompile Include="dx\shot.cpp" />
@@ -166,6 +167,8 @@
     <ClCompile Include="math\utility.cpp" />
     <ClCompile Include="math\vector3.cpp" />
     <ClCompile Include="pseudo3d.cpp" />
+    <ClCompile Include="pseudo3d_logic.cpp" />
+    <ClCompile Include="shot_logic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3d\camera.h" />
@@ -174,6 +177,8 @@
     <ClInclude Include="3d\polygon.h" />
     <ClInclude Include="3d\vertex.h" />
     <ClInclude Include="3d\viewport.h" />
+    <ClInclude Include="camera_logic.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="dx\enemy.h" />
     <ClInclude Include="dx\polygon_dx.h" />
     <ClInclude Include="dx\shot.h" />
@@ -182,6 +187,8 @@
     <ClInclude Include="math\utility.h" />
     <ClInclude Include="math\vector3.h" />
     <ClInclude Include="pseudo3d.h" />
+    <ClInclude Include="pseudo3d_logic.h" />
+    <ClInclude Include="shot_logic.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

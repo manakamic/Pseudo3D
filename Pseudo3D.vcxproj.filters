@@ -84,6 +84,15 @@
     <ClCompile Include="dx\shot.cpp">
       <Filter>ソース ファイル\dx</Filter>
     </ClCompile>
+    <ClCompile Include="camera_logic.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="shot_logic.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="pseudo3d_logic.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="math\vector3.h">
@@ -127,6 +136,18 @@
     </ClInclude>
     <ClInclude Include="dx\shot.h">
       <Filter>ヘッダー ファイル\dx</Filter>
+    </ClInclude>
+    <ClInclude Include="camera_logic.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="shot_logic.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="pseudo3d_logic.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
