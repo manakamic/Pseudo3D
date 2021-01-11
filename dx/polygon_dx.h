@@ -27,7 +27,7 @@ public:
     polygon_dx(polygon_dx&&) = default; // ムーブ
 
     // デストラクタ
-    virtual ~polygon_dx() = default;
+    virtual ~polygon_dx();
 
     polygon_dx& operator =(const polygon_dx&) = default; // コピー
     polygon_dx& operator =(polygon_dx&&) = default; // ムーブ

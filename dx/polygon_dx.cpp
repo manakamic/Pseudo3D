@@ -29,6 +29,21 @@ polygon_dx::polygon_dx(type_kind type) {
     world_vertices.fill(nullptr);
 }
 
+polygon_dx::~polygon_dx() {
+#if !defined(_USE_RASTERIZE)
+    if (handle != -1) {
+        for (auto&& pair : handle_list) {
+            if (pair.second == handle) {
+                DeleteGraph(handle);
+                break;
+            }
+        }
+
+        handle = -1;
+    }
+#endif
+}
+
 bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector3& offset) {
     auto init = r3d::polygon::initialize();
     auto image = load_image(file_name);
