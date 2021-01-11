@@ -94,6 +94,7 @@ namespace png
          */
         static component get_alpha_filler()
         {
+#undef max
             return std::numeric_limits< component >::max();
         }
     };
