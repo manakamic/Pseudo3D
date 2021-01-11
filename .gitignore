@@ -363,3 +363,5 @@ FodyWeavers.xsd
 
 # DX Library
 dxlib/*.*
+
+Log.txt
