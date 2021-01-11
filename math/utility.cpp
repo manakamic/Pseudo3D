@@ -21,9 +21,9 @@ namespace math {
     }
 
     // 矩形と線分の当たり判定
-    collision utility::collision_polygon_line(const vector3 polygon_point0, const vector3 polygon_point1,
-                                              const vector3 polygon_point2, const vector3 polygon_point3,
-                                              const vector3 line_start, const vector3 line_end) {
+    collision utility::collision_polygon_line(const vector3& polygon_point0, const vector3& polygon_point1,
+                                              const vector3& polygon_point2, const vector3& polygon_point3,
+                                              const vector3& line_start, const vector3& line_end) {
         // 平面の情報をセット
         const auto normal = get_normal(polygon_point0, polygon_point1, polygon_point2);
         const auto plane  = std::make_tuple(polygon_point0, normal);
@@ -94,7 +94,7 @@ namespace math {
     }
 
     // 平面と線分の当たり判定
-    bool utility::collision_plane_line(const plane p, const vector3 line_start, const vector3 line_end, collision& result) {
+    bool utility::collision_plane_line(const plane& p, const vector3& line_start, const vector3& line_end, collision& result) {
         const vector3 plane_point  = std::get<0>(p);
         const vector3 plane_normal = std::get<1>(p);
         auto point_to_start = line_start - plane_point;

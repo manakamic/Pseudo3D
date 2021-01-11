@@ -32,9 +32,9 @@ namespace math {
         }
 
         // ‹éŒ`‚Æü•ª‚Ì“–‚½‚è”»’è
-        static collision collision_polygon_line(const vector3 polygon_point0, const vector3 polygon_point1,
-                                                const vector3 polygon_point2, const vector3 polygon_point3,
-                                                const vector3 line_start, const vector3 line_end);
+        static collision collision_polygon_line(const vector3& polygon_point0, const vector3& polygon_point1,
+                                                const vector3& polygon_point2, const vector3& polygon_point3,
+                                                const vector3& line_start, const vector3& line_end);
 
         // –Ê‚Ì–@ü‚ğ‹‚ß‚é
         static vector3 get_normal(const vector3& point0, const vector3& point1, const vector3& point2);
@@ -43,7 +43,7 @@ namespace math {
         static bool inside_triangle_point(const vector3& triangle_point0, const vector3& triangle_point1, const vector3& triangle_point2, const vector3& point);
 
         // •½–Ê‚Æü•ª‚Ì•Ó‚è”»’è
-        static bool collision_plane_line(const plane p, const vector3 line_start, const vector3 line_end, collision& result);
+        static bool collision_plane_line(const plane& p, const vector3& line_start, const vector3& line_end, collision& result);
 
 #if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
         static std::shared_ptr<vector3> collision_point;
