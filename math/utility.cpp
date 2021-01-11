@@ -77,7 +77,7 @@ namespace math {
         const auto v1p = point - triangle_point1;
         const auto v12 = triangle_point2 - triangle_point1;
         const auto v2p = point - triangle_point2;
-        const auto v21 = triangle_point1 - triangle_point2;
+        const auto v21 = triangle_point0 - triangle_point2;
         const auto v0p = point - triangle_point0;
         auto c0 = v01.cross(v1p);
         auto c1 = v12.cross(v2p);
