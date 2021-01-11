@@ -5,9 +5,17 @@
 #include "vertex.h"
 #include "polygon_dx.h"
 #include "DxLib.h"
+#if defined(_USE_RASTERIZE)
+#include "png.hpp"
+#include "rasterize.h"
+#endif
 
 namespace {
     std::unordered_map<const TCHAR*, int> handle_list;
+#if defined(_USE_RASTERIZE)
+    std::unordered_map<int, png::image <png::rgba_pixel>> image_list;
+    auto name_counter = 0;
+#endif
 }
 
 polygon_dx::polygon_dx(type_kind type) {
@@ -64,6 +72,22 @@ bool polygon_dx::load_image(const TCHAR* file_name) {
     auto find = handle_list.find(file_name);
 
     if (find == handle_list.end()) {
+#if defined(_USE_RASTERIZE)
+        try {
+            png::image <png::rgba_pixel> image(file_name);
+
+            handle = name_counter;
+            name_counter++;
+
+            image_list.emplace(handle, image);
+        } catch (png::error& error) {
+            return false;
+        }
+
+        handle_list.emplace(file_name, handle);
+
+        return true;
+#else
         handle = LoadGraph(file_name);
 
         if (-1 != handle) {
@@ -74,6 +98,7 @@ bool polygon_dx::load_image(const TCHAR* file_name) {
         }
 
         return false;
+#endif
     }
 
     handle = handle_list[file_name];
@@ -111,11 +136,19 @@ void polygon_dx::render() {
         getXY(i);
     }
 
+#if defined(_USE_RASTERIZE)
+    rasterize::Draw(std::get<0>(xyList[0]), std::get<1>(xyList[0]),
+                    std::get<0>(xyList[2]), std::get<1>(xyList[2]),
+                    std::get<0>(xyList[3]), std::get<1>(xyList[3]),
+                    std::get<0>(xyList[1]), std::get<1>(xyList[1]),
+                    image_list[handle]);
+#else
     DrawModiGraph(std::get<0>(xyList[0]), std::get<1>(xyList[0]),
                   std::get<0>(xyList[2]), std::get<1>(xyList[2]),
                   std::get<0>(xyList[3]), std::get<1>(xyList[3]),
                   std::get<0>(xyList[1]), std::get<1>(xyList[1]),
                   handle, TRUE);
+#endif
 }
 
 bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {

@@ -1,7 +1,7 @@
 #include "vector3.h"
 #include "matrix44.h"
 #include "enemy.h"
-#if _DEBUG_3D
+#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
 #include "vertex.h"
 #include "DxLib.h"
 #endif
@@ -72,9 +72,7 @@ void enemy::render() {
         return;
     }
 
-#ifndef _DEBUG_3D
-    polygon_dx::render();
-#else
+#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
     std::array<std::tuple<int, int>, r3d::polygon_vertices_num> xyList;
 
     auto getXY = [this, &xyList](int index) -> bool {
@@ -119,5 +117,7 @@ void enemy::render() {
     DrawLine(std::get<0>(xyList[2]), std::get<1>(xyList[2]), std::get<0>(xyList[3]), std::get<1>(xyList[3]), color);
     DrawLine(std::get<0>(xyList[3]), std::get<1>(xyList[3]), std::get<0>(xyList[1]), std::get<1>(xyList[1]), color);
     DrawLine(std::get<0>(xyList[1]), std::get<1>(xyList[1]), std::get<0>(xyList[0]), std::get<1>(xyList[0]), color);
+#else
+    polygon_dx::render();
 #endif
 }

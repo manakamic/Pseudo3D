@@ -10,7 +10,7 @@ namespace {
 
 namespace math {
 
-#if _DEBUG_3D
+#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
     std::shared_ptr<vector3> utility::collision_point = nullptr;
 #endif
 
@@ -37,7 +37,7 @@ namespace math {
         // •½–Ê‚Æ‚ÌŒð“_
         const vector3 point = std::get<1>(result);
 
-#if _DEBUG_3D
+#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
         collision_point.reset(new vector3(point));
 #endif
 

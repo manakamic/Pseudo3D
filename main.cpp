@@ -15,6 +15,9 @@
 #include "camera_logic.h"
 #include "shot_logic.h"
 #include "pseudo3d_logic.h"
+#if defined(_USE_RASTERIZE)
+#include "rasterize.h"
+#endif
 
 namespace {
     constexpr auto WINDOW_TITLE = "Pseudo 3D Sample";
@@ -28,6 +31,14 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 #ifdef _DEBUG
     window_mode = TRUE;
+#endif
+
+#if defined(_USE_RASTERIZE)
+    std::shared_ptr<rasterize> rasterize(new rasterize);
+
+    if (!rasterize->initialize(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+        return -1;
+    }
 #endif
 
     SetMainWindowText(WINDOW_TITLE);
@@ -77,8 +88,15 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         pseudo3d->update();
 
         ClearDrawScreen();
+#if defined(_USE_RASTERIZE)
+        rasterize->clear();
+#endif
 
         pseudo3d->render();
+
+#if defined(_USE_RASTERIZE)
+        rasterize->render();
+#endif
 
         ScreenFlip();
     }

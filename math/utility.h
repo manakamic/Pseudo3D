@@ -1,6 +1,6 @@
 #pragma once
 #include <tuple>
-#if _DEBUG_3D
+#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
 #include <memory>
 #include <vector>
 #include <array>
@@ -45,7 +45,7 @@ namespace math {
         // •½–Ê‚Æü•ª‚Ì•Ó‚è”»’è
         static bool collision_plane_line(const plane p, const vector3 line_start, const vector3 line_end, collision& result);
 
-#if _DEBUG_3D
+#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
         static std::shared_ptr<vector3> collision_point;
 #endif
 
