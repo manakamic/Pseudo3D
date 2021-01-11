@@ -40,7 +40,7 @@ namespace math {
         static vector3 get_normal(const vector3& point0, const vector3& point1, const vector3& point2);
 
         // 三角形と点の内外判定(point は必ず三角形と同平面である事)
-        static bool inside_triangle_point(const vector3 triangle_point0, const vector3 triangle_point1, const vector3 triangle_point2, const vector3 point);
+        static bool inside_triangle_point(const vector3& triangle_point0, const vector3& triangle_point1, const vector3& triangle_point2, const vector3& point);
 
         // 平面と線分の辺り判定
         static bool collision_plane_line(const plane p, const vector3 line_start, const vector3 line_end, collision& result);

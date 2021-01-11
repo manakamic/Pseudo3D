@@ -72,7 +72,7 @@ namespace math {
     }
 
     // 三角形と点の内外判定(point は必ず三角形と同平面である事)
-    bool utility::inside_triangle_point(const vector3 triangle_point0, const vector3 triangle_point1, const vector3 triangle_point2, const vector3 point) {
+    bool utility::inside_triangle_point(const vector3& triangle_point0, const vector3& triangle_point1, const vector3& triangle_point2, const vector3& point) {
         const auto v01 = triangle_point1 - triangle_point0;
         const auto v1p = point - triangle_point1;
         const auto v12 = triangle_point2 - triangle_point1;
