@@ -22,7 +22,5 @@ private:
     bool load_buffer_png();
     bool create_dx_handle();
 
-    int width;
-    int height;
     int handle;
 };
