@@ -37,6 +37,9 @@
     <Filter Include="ソース ファイル\dx">
       <UniqueIdentifier>{9a279f04-0b56-449d-b38b-a2b3e481b94c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\pngpp">
+      <UniqueIdentifier>{b407090c-e68f-4cfc-9e13-6e3e2c73dbc5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,6 +96,9 @@
     <ClCompile Include="pseudo3d_logic.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="dx\rasterize.cpp">
+      <Filter>ソース ファイル\dx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="math\vector3.h">
@@ -148,6 +154,96 @@
     </ClInclude>
     <ClInclude Include="constants.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\color.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\config.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\consumer.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\convert_color_space.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\end_info.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\error.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\ga_pixel.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\generator.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\gray_pixel.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\image.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\image_info.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\index_pixel.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\info.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\info_base.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\io_base.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\packed_pixel.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\palette.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\pixel_buffer.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\pixel_traits.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\png.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\reader.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\require_color_space.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\rgb_pixel.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\rgba_pixel.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\solid_pixel_buffer.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\streaming_base.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\tRNS.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\types.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="pngpp\writer.hpp">
+      <Filter>ヘッダー ファイル\pngpp</Filter>
+    </ClInclude>
+    <ClInclude Include="dx\rasterize.h">
+      <Filter>ヘッダー ファイル\dx</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
