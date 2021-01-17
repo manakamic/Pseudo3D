@@ -33,14 +33,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     window_mode = TRUE;
 #endif
 
-#if defined(_USE_RASTERIZE)
-    std::shared_ptr<rasterize> rasterize(new rasterize);
-
-    if (!rasterize->initialize(SCREEN_WIDTH, SCREEN_HEIGHT)) {
-        return -1;
-    }
-#endif
-
     SetMainWindowText(WINDOW_TITLE);
 
     ChangeWindowMode(window_mode);
@@ -50,6 +42,15 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     if (DxLib_Init() == -1) {
         return -1;
     }
+
+#if defined(_USE_RASTERIZE)
+    std::shared_ptr<rasterize> rasterize(new rasterize);
+
+    if (!rasterize->initialize(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+        DxLib_End();
+        return -1;
+    }
+#endif
 
     SetDrawScreen(DX_SCREEN_BACK);
 
