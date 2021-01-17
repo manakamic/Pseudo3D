@@ -1,10 +1,6 @@
 #include "vector3.h"
 #include "matrix44.h"
 #include "enemy.h"
-#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
-#include "vertex.h"
-#include "DxLib.h"
-#endif
 
 namespace {
     constexpr auto END_MILLI_SEC = 3000.0;
@@ -72,52 +68,5 @@ void enemy::render() {
         return;
     }
 
-#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
-    std::array<std::tuple<int, int>, r3d::polygon_vertices_num> xyList;
-
-    auto getXY = [this, &xyList](int index) -> bool {
-        auto pos = transform_vertices[index]->get_position();
-
-        if (pos == nullptr) {
-            return false;
-        }
-
-        std::get<0>(xyList[index]) = static_cast<int>(std::round(pos->get_x()));
-        std::get<1>(xyList[index]) = static_cast<int>(std::round(pos->get_y()));
-
-        return true;
-    };
-
-    for (auto i = 0; i < r3d::polygon_vertices_num; ++i) {
-        getXY(i);
-    }
-
-    DrawModiGraph(std::get<0>(xyList[0]), std::get<1>(xyList[0]),
-                  std::get<0>(xyList[2]), std::get<1>(xyList[2]),
-                  std::get<0>(xyList[3]), std::get<1>(xyList[3]),
-                  std::get<0>(xyList[1]), std::get<1>(xyList[1]),
-                  handle, TRUE);
-
-    auto color = GetColor(255, 255, 255);
-    std::shared_ptr<math::vector3> pos = world_vertices[0];
-
-    DrawFormatString(std::get<0>(xyList[0]), std::get<1>(xyList[0]), color, "%.1lf\n%.1lf\n%.1lf", pos->get_x(), pos->get_y(), pos->get_z());
-
-    auto red = 0;
-    auto blue = 255;
-
-    if (hit) {
-        red = 255;
-        blue = 0;
-    }
-
-    color = GetColor(red, 0, blue);
-
-    DrawLine(std::get<0>(xyList[0]), std::get<1>(xyList[0]), std::get<0>(xyList[2]), std::get<1>(xyList[2]), color);
-    DrawLine(std::get<0>(xyList[2]), std::get<1>(xyList[2]), std::get<0>(xyList[3]), std::get<1>(xyList[3]), color);
-    DrawLine(std::get<0>(xyList[3]), std::get<1>(xyList[3]), std::get<0>(xyList[1]), std::get<1>(xyList[1]), color);
-    DrawLine(std::get<0>(xyList[1]), std::get<1>(xyList[1]), std::get<0>(xyList[0]), std::get<1>(xyList[0]), color);
-#else
     polygon_dx::render();
-#endif
 }
