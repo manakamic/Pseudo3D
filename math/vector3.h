@@ -7,7 +7,8 @@ namespace math {
     public:
         // コンストラクタ
         vector3();
-        vector3(const double x, const double y, const double z) : x(x), y(y), z(z) {}
+        vector3(const double x, const double y, const double z) : x(x), y(y), z(z), w(1.0) {}
+        vector3(const double x, const double y, const double z, double w) : x(x), y(y), z(z), w(w) {}
         vector3(const vector3&) = default; // コピー
         vector3(vector3&&) = default; // ムーブ
 
@@ -34,6 +35,7 @@ namespace math {
         const double get_x() const { return x; }
         const double get_y() const { return y; }
         const double get_z() const { return z; }
+        const double get_w() const { return w; }
 
         const double lenght() const;
 
@@ -49,6 +51,7 @@ namespace math {
         double x;
         double y;
         double z;
+        double w;
     };
 
 } // math

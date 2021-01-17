@@ -5,13 +5,14 @@
 namespace math {
 
     vector3::vector3() {
-        x = 0.0l; y = 0.0; z = 0.0;
+        x = 0.0l; y = 0.0; z = 0.0; w = 1.0;
     }
 
     void vector3::set(const vector3& vector) {
         x = vector.get_x();
         y = vector.get_y();
         z = vector.get_z();
+        w = vector.get_w();
     }
 
     void vector3::set(const double x, const double y, const double z) {
@@ -107,7 +108,9 @@ namespace math {
                + z * rhs.get_value(2, 3)
                +     rhs.get_value(3, 3);
 
-        return xyz / w;
+        auto xyzw = xyz / w;
+
+        return vector3(xyzw.x, xyzw.y, xyzw.z, w);
     }
 
 } // math
