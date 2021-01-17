@@ -8,7 +8,7 @@
 #include "polygon_dx.h"
 #include "shot.h"
 #include "pseudo3d.h"
-#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
+#if defined(_DEBUG_3D)
 #include "utility.h"
 #include "DxLib.h"
 
@@ -88,7 +88,7 @@ void pseudo3d::transform() {
 
     auto cam_pers_view_mat = (*cam_mat) * perspective_viewport;
 
-#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
+#if defined(_DEBUG_3D)
     debug_cam_pers_view_mat = cam_pers_view_mat;
 #endif
 
@@ -111,6 +111,7 @@ void pseudo3d::transform() {
         }
     }
 
+#if !defined(_USE_RASTERIZE)
     if (polygon_list.size() > 1) {
         // ポリゴンの重心の Z 値でソート
         auto compare = [](const std::shared_ptr<polygon_dx>& lhs, const std::shared_ptr<polygon_dx>& rhs) -> bool {
@@ -125,6 +126,7 @@ void pseudo3d::transform() {
 
         std::sort(polygon_list.begin(), polygon_list.end(), compare);
     }
+#endif
 }
 
 void pseudo3d::render() {
@@ -138,7 +140,7 @@ void pseudo3d::render() {
         }
     }
 
-#if defined(_DEBUG_3D) && !defined(_USE_RASTERIZE)
+#if defined(_DEBUG_3D)
     if (math::utility::collision_point != nullptr) {
         auto debug_point = math::utility::collision_point->mult_with_w(debug_cam_pers_view_mat);
         auto debug_x = debug_point.get_x();
