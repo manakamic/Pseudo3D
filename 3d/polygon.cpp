@@ -44,6 +44,9 @@ namespace r3d {
             auto trans_pos = src_pos->mult_with_w(matrix);
 
             dst->set_position(trans_pos);
+#if defined(_USE_RASTERIZE)
+            dst->set_uv(src->get_uv());
+#endif
         }
 
         return true;

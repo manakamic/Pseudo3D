@@ -6,6 +6,7 @@ namespace r3d {
 
     vertex::vertex() {
         position = nullptr;
+        uv.fill(0.0);
     }
 
     bool vertex::initialize() {

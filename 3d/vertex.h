@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cstdint>
 #include <memory>
-//#include <array>
+#include <array>
 
 /*
 namespace image {
@@ -15,15 +14,8 @@ namespace math {
 }
 
 namespace r3d {
-    /*
-    enum class uv_kind {
-        u = 0,
-        v,
-        max
-    };
 
-    constexpr uint32_t uv_max = static_cast<uint32_t>(uv_kind::max);
-    */
+    constexpr auto uv_max = 2;
 
     class vertex {
     public:
@@ -42,13 +34,17 @@ namespace r3d {
         bool set_position(const math::vector3& vector);
         const std::shared_ptr<math::vector3> get_position() const { return position; }
 
+        void set_uv(const double u, const double v) { uv[0] = u; uv[1] = v; }
+        void set_uv(const std::array<double, uv_max>& uv) { this->uv[0] = uv[0]; this->uv[1] = uv[1]; }
+        const std::array<double, uv_max> get_uv() const { return uv; }
+
     private:
         std::shared_ptr<math::vector3> position;
-        /*
-        std::unique_ptr<math::vector3> normal;
+        //std::unique_ptr<math::vector3> normal;
 
         std::array<double, uv_max> uv;
 
+        /*
         std::unique_ptr<image::color> diffuse;
         std::unique_ptr<image::color> speculer;
         double speculer_power;

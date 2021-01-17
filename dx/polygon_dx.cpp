@@ -69,12 +69,19 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector3& 
         nullptr,
         nullptr
     };
+#if defined(_USE_RASTERIZE)
+    std::array<double, r3d::polygon_vertices_num> u_list = { 0.0, 0.0, 1.0, 1.0 };
+    std::array<double, r3d::polygon_vertices_num> v_list = { 0.0, 1.0, 0.0, 1.0 };
+#endif
 
     for (int i = 0; i < r3d::polygon_vertices_num; ++i) {
         std::shared_ptr<r3d::vertex> vertex(new r3d::vertex);
 
         vertex->initialize();
         vertex->set_position(*position_list[i]);
+#if defined(_USE_RASTERIZE)
+        vertex->set_uv(u_list[i], v_list[i]);
+#endif
         vertices_list[i] = vertex;
     }
 
@@ -152,17 +159,27 @@ void polygon_dx::render() {
     }
 
 #if defined(_USE_RASTERIZE)
-    rasterize::Draw(std::get<0>(xyList[0]), std::get<1>(xyList[0]),
-                    std::get<0>(xyList[2]), std::get<1>(xyList[2]),
-                    std::get<0>(xyList[3]), std::get<1>(xyList[3]),
-                    std::get<0>(xyList[1]), std::get<1>(xyList[1]),
-                    image_list[handle]);
+    rasterize::Draw(transform_vertices, image_list[handle]);
 #else
     DrawModiGraph(std::get<0>(xyList[0]), std::get<1>(xyList[0]),
                   std::get<0>(xyList[2]), std::get<1>(xyList[2]),
                   std::get<0>(xyList[3]), std::get<1>(xyList[3]),
                   std::get<0>(xyList[1]), std::get<1>(xyList[1]),
                   handle, TRUE);
+#endif
+
+#if defined(_DEBUG_3D)
+    std::shared_ptr<math::vector3> pos = world_vertices[0];
+    auto color = GetColor(255, 255, 255);
+
+    DrawFormatString(std::get<0>(xyList[0]), std::get<1>(xyList[0]), color, "%.1lf\n%.1lf\n%.1lf", pos->get_x(), pos->get_y(), pos->get_z());
+
+    color = GetColor(0, 0, 255);
+
+    DrawLine(std::get<0>(xyList[0]), std::get<1>(xyList[0]), std::get<0>(xyList[2]), std::get<1>(xyList[2]), color);
+    DrawLine(std::get<0>(xyList[2]), std::get<1>(xyList[2]), std::get<0>(xyList[3]), std::get<1>(xyList[3]), color);
+    DrawLine(std::get<0>(xyList[3]), std::get<1>(xyList[3]), std::get<0>(xyList[1]), std::get<1>(xyList[1]), color);
+    DrawLine(std::get<0>(xyList[1]), std::get<1>(xyList[1]), std::get<0>(xyList[0]), std::get<1>(xyList[0]), color);
 #endif
 }
 
@@ -187,6 +204,9 @@ bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {
         world_vertices[i].reset(new math::vector3(world_pos));
 
         dst->set_position(trans_pos);
+#if defined(_USE_RASTERIZE)
+        dst->set_uv(src->get_uv());
+#endif
     }
 
     return true;
