@@ -7,6 +7,7 @@
 
 class rasterize {
 public:
+    // DrawModiGraph の代わりにコールする
     static void Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image);
 
     // コンストラクタ
