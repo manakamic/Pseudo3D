@@ -24,46 +24,33 @@ namespace {
     int handle00 = -1;
     int handle01 = -1;
 
-    bool double_buffer = false;
+    bool double_buffer_flag = false;
 
     // デプスバッファ
     std::unique_ptr<double> depth_buffer = nullptr;
     int depth_buffer_size = 0;
 
-    void delete_thread00() {
-        if (db_thread00.joinable()) {
-            db_thread00.join();
-        }
-    }
-
-    void delete_thread01() {
-        if (db_thread01.joinable()) {
-            db_thread01.join();
+    void delete_thread(std::thread& th) {
+        if (th.joinable()) {
+            th.join();
         }
     }
 
     void delete_thread() {
-        delete_thread01();
-        delete_thread00();
+        delete_thread(db_thread01);
+        delete_thread(db_thread00);
     }
 
-    void delete_handle00() {
-        if (handle00 != -1) {
-            DeleteGraph(handle00);
-            handle00 = -1;
-        }
-    }
-
-    void delete_handle01() {
-        if (handle01 != -1) {
-            DeleteGraph(handle01);
-            handle01 = -1;
+    void delete_handle(int& handle) {
+        if (handle != -1) {
+            DeleteGraph(handle);
+            handle = -1;
         }
     }
 
     void delete_handle() {
-        delete_handle01();
-        delete_handle00();
+        delete_handle(handle01);
+        delete_handle(handle00);
     }
 
     // ダブルバッファ(png)を作成
@@ -90,24 +77,13 @@ namespace {
         return true;
     }
 
-    void clear_buffer00() {
-        auto width = buffer00.get_width();
-        auto height = buffer00.get_height();
+    void clear_buffer(png::image<png::rgb_pixel>& buffer) {
+        auto width = buffer.get_width();
+        auto height = buffer.get_height();
 
         for (auto y = 0U; y < height; ++y) {
             for (auto x = 0U; x < width; ++x) {
-                buffer00[y][x] = png::rgb_pixel(0x00, 0x00, 0x00);
-            }
-        }
-    }
-
-    void clear_buffer01() {
-        auto width = buffer01.get_width();
-        auto height = buffer01.get_height();
-
-        for (auto y = 0U; y < height; ++y) {
-            for (auto x = 0U; x < width; ++x) {
-                buffer01[y][x] = png::rgb_pixel(0x00, 0x00, 0x00);
+                buffer[y][x] = png::rgb_pixel(0x00, 0x00, 0x00);
             }
         }
     }
@@ -225,6 +201,34 @@ namespace {
 
         return false;
     }
+
+    // スレッド(C++11 と DX ライブラリ)の同期
+    void synchronized_thread(std::thread& th, int& handle) {
+        if (th.joinable()) {
+            th.join();
+
+            while (CheckHandleASyncLoad(handle) != FALSE) {
+                ProcessMessage(); // ProcessMessage で非同期ロードが進む
+
+                // 無限ループなのでメインループと同じ脱出処理を記述
+                if (1 == CheckHitKey(KEY_INPUT_ESCAPE)) {
+                    handle = -1;
+                    break;
+                }
+            }
+
+            SetUseASyncLoadFlag(FALSE); // 非同期ロードを無効にする
+        }
+    }
+
+    // スレッドで行う処理
+    void process_thread(const TCHAR* png_name, png::image<png::rgb_pixel>& buffer, int& handle) {
+        buffer.write(png_name);       // ファイル書き出し
+        clear_buffer(buffer);         // ファイル書き込みが終わったらクリアしておく
+        SetUseASyncLoadFlag(TRUE);    // 非同期ロードを有効にする
+        delete_handle(handle);        // 前回のロード画像を破棄(ロードを繰り返すのできちんと破棄する)
+        handle = LoadGraph(png_name); // 非同期ロード
+    }
 }
 
 void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image) {
@@ -286,7 +290,7 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
 
             if (in && depth[depth_pos] > z) { // Z バッファ処理
                 // アルファブレンド
-                if (alpha_blend(x, y, u, v, image, double_buffer ? buffer01 : buffer00)) {
+                if (alpha_blend(x, y, u, v, image, double_buffer_flag ? buffer01 : buffer00)) {
                     depth[depth_pos] = z; // ピクセルを書き込んだら デプスバッファを更新
                 }
             }
@@ -323,37 +327,31 @@ void rasterize::clear() {
 }
 
 void rasterize::render() {
-    if (double_buffer) {
-        delete_thread00(); // 前フレームで作成したスレッドの同期
-        delete_handle00(); // 前回のロード画像を破棄
+    if (double_buffer_flag) {
+        // 前フレームで作成したスレッドの同期
+        synchronized_thread(db_thread00, handle00);
 
-        handle00 = LoadGraph(BUFFER_00_PNG); // スレッドで処理された png をロード
-
+        // スレッドで処理された png をロード
         std::thread th01([]() {
-            buffer01.write(BUFFER_01_PNG);
-            clear_buffer01();
+            process_thread(BUFFER_01_PNG, buffer01, handle01);
         });
 
         db_thread01 = std::move(th01);
     }
     else {
-        delete_thread01();
-        delete_handle01();
-
-        handle01 = LoadGraph(BUFFER_01_PNG);
+        synchronized_thread(db_thread01, handle01);
 
         std::thread th00([]() {
-            buffer00.write(BUFFER_00_PNG);
-            clear_buffer00();
+            process_thread(BUFFER_00_PNG, buffer00, handle00);
         });
 
         db_thread00 = std::move(th00);
     }
 
     // 読込が終わっている方を使用する
-    auto handle = double_buffer ? handle00 : handle01;
+    auto handle = double_buffer_flag ? handle00 : handle01;
 
-    double_buffer = !double_buffer;
+    double_buffer_flag = !double_buffer_flag;
 
     if (handle == -1) {
         return;
