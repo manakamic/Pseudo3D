@@ -166,7 +166,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math\matrix44.cpp" />
     <ClCompile Include="math\utility.cpp" />
-    <ClCompile Include="math\vector3.cpp" />
+    <ClCompile Include="math\vector4.cpp" />
     <ClCompile Include="pseudo3d.cpp" />
     <ClCompile Include="pseudo3d_logic.cpp" />
     <ClCompile Include="shot_logic.cpp" />
@@ -187,7 +187,7 @@
     <ClInclude Include="image\color.h" />
     <ClInclude Include="math\matrix44.h" />
     <ClInclude Include="math\utility.h" />
-    <ClInclude Include="math\vector3.h" />
+    <ClInclude Include="math\vector4.h" />
     <ClInclude Include="pngpp\color.hpp" />
     <ClInclude Include="pngpp\config.hpp" />
     <ClInclude Include="pngpp\consumer.hpp" />
