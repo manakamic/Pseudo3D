@@ -34,6 +34,8 @@ namespace image {
         // デストラクタ
         virtual ~color() = default;
 
+        void set(const color& color);
+
         uint8_t get_r() const { return rgba[color_r]; }
         uint8_t get_g() const { return rgba[color_g]; }
         uint8_t get_b() const { return rgba[color_b]; }
@@ -41,6 +43,9 @@ namespace image {
 
         color& operator =(const color&) = default; // コピー
         color& operator =(color&&) = default; // ムーブ
+
+        const color operator *(const double rhs) const;
+        const color operator +(const color& rhs) const;
 
         const double operator [](const color_kind kind) const;
         const double operator [](const uint32_t kind) const;

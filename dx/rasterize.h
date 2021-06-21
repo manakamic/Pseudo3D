@@ -5,6 +5,10 @@
 #include <thread>
 #include "png.hpp"
 
+namespace r3d {
+    class vertex;
+}
+
 class rasterize {
 public:
     // DrawModiGraph ‚Ì‘ã‚í‚è‚ÉƒR[ƒ‹‚·‚é

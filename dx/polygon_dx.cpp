@@ -9,6 +9,9 @@
 #include "png.hpp"
 #include "rasterize.h"
 #endif
+#if defined(_USE_LIGHTING)
+#include "color.h"
+#endif
 
 namespace {
     std::unordered_map<const TCHAR*, int> handle_list;
@@ -56,7 +59,7 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
     world_matrix.reset(new math::matrix44);
 
     half_size = size / 2.0;
-    
+
     std::array<std::shared_ptr<math::vector4>, r3d::polygon_vertices_num> position_list = {
          std::make_shared<math::vector4>(-half_size,  half_size, 0.0),
          std::make_shared<math::vector4>(-half_size, -half_size, 0.0),
@@ -73,6 +76,13 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
     std::array<double, r3d::polygon_vertices_num> u_list = { 0.0, 0.0, 1.0, 1.0 };
     std::array<double, r3d::polygon_vertices_num> v_list = { 0.0, 1.0, 0.0, 1.0 };
 #endif
+#if defined(_USE_LIGHTING)
+    auto normal = math::vector4(0.0, 0.0, -1.0);
+    auto ambient = image::color(64, 64, 64);
+    auto diffuse = image::color();
+    auto speculer = image::color();
+    auto speculer_power = 1.0;
+#endif
 
     for (int i = 0; i < r3d::polygon_vertices_num; ++i) {
         std::shared_ptr<r3d::vertex> vertex(new r3d::vertex);
@@ -81,6 +91,12 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
         vertex->set_position(*position_list[i]);
 #if defined(_USE_RASTERIZE)
         vertex->set_uv(u_list[i], v_list[i]);
+#endif
+#if defined(_USE_LIGHTING)
+        vertex->set_normal(normal);
+        vertex->set_ambient(ambient);
+        vertex->set_diffuse(diffuse);
+        vertex->set_speculer(speculer, speculer_power);
 #endif
         vertices_list[i] = vertex;
     }
@@ -206,6 +222,20 @@ bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {
         dst->set_position(trans_pos);
 #if defined(_USE_RASTERIZE)
         dst->set_uv(src->get_uv());
+#endif
+#if defined(_USE_LIGHTING)
+        auto src_normal = src->get_normal();
+
+        if (src_normal == nullptr) {
+            return false;
+        }
+
+        auto world_normal = (*src_normal) * (*world_matrix);
+
+        dst->set_normal(world_normal);
+        dst->set_ambient(*src->get_ambient());
+        dst->set_diffuse(*src->get_diffuse());
+        dst->set_speculer(*src->get_speculer(), src->get_speculer_power());
 #endif
     }
 

@@ -47,6 +47,13 @@ namespace r3d {
 #if defined(_USE_RASTERIZE)
             dst->set_uv(src->get_uv());
 #endif
+#if defined(_USE_LIGHTING)
+            // TODO : –@ü‚Ìˆ—
+            dst->set_normal(*src->get_normal());
+            dst->set_ambient(*src->get_ambient());
+            dst->set_diffuse(*src->get_diffuse());
+            dst->set_speculer(*src->get_speculer(), src->get_speculer_power());
+#endif
         }
 
         return true;

@@ -3,11 +3,11 @@
 #include <memory>
 #include <array>
 
-/*
+#if defined(_USE_LIGHTING)
 namespace image {
     class color;
 }
-*/
+#endif
 
 namespace math {
     class vector4;
@@ -38,17 +38,33 @@ namespace r3d {
         void set_uv(const std::array<double, uv_max>& uv) { this->uv[0] = uv[0]; this->uv[1] = uv[1]; }
         const std::array<double, uv_max> get_uv() const { return uv; }
 
+#if defined(_USE_LIGHTING)
+        bool set_normal(const math::vector4& vector);
+        const std::shared_ptr<math::vector4> get_normal() const { return normal; }
+
+        bool set_ambient(const image::color& color);
+        const std::shared_ptr<image::color> get_ambient() const { return ambient; }
+
+        bool set_diffuse(const image::color& color);
+        const std::shared_ptr<image::color> get_diffuse() const { return diffuse; }
+
+        bool set_speculer(const image::color& color, double power);
+        const std::shared_ptr<image::color> get_speculer() const { return speculer; }
+        double get_speculer_power() const { return speculer_power; }
+#endif
+
     private:
         std::shared_ptr<math::vector4> position;
-        //std::unique_ptr<math::vector4> normal;
 
         std::array<double, uv_max> uv;
 
-        /*
-        std::unique_ptr<image::color> diffuse;
-        std::unique_ptr<image::color> speculer;
+#if defined(_USE_LIGHTING)
+        std::shared_ptr<math::vector4> normal;
+        std::shared_ptr<image::color> ambient;
+        std::shared_ptr<image::color> diffuse;
+        std::shared_ptr<image::color> speculer;
         double speculer_power;
-        */
+#endif
     };
 
 } // r3d
