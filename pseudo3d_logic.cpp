@@ -94,13 +94,13 @@ void initialize_enemy(const std::shared_ptr<pseudo3d>& pseudo3d) {
     auto png_max = static_cast<int>(PNG_LIST.size()) - 1;
 
     for (auto i = 0; i < enemy_num; ++i) {
-        std::shared_ptr<enemy> enemy(new enemy);
+        std::shared_ptr<enemy> enemy_ptr(new enemy);
         auto png_index = math::utility::get_random(0, png_max);
         auto offset_x = math::utility::get_random(-ENEMY_RANDOM_X, ENEMY_RANDOM_X);
         auto offset_z = math::utility::get_random(0, ENEMY_RANDOM_Z);
         auto offset = math::vector4(static_cast<double>(offset_x), 0.0, static_cast<double>(offset_z));
 
-        enemy->initialize(PNG_LIST[png_index], ENEMY_SIZE, offset);
-        pseudo3d->add_polygon(enemy);
+        enemy_ptr->initialize(PNG_LIST[png_index], ENEMY_SIZE, offset);
+        pseudo3d->add_polygon(enemy_ptr);
     }
 }

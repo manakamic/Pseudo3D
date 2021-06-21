@@ -54,12 +54,12 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     SetDrawScreen(DX_SCREEN_BACK);
 
-    std::shared_ptr<pseudo3d> pseudo3d(new pseudo3d);
+    std::shared_ptr<pseudo3d> pseudo3d_ptr(new pseudo3d);
 
-    initialize_pseudo3d(pseudo3d);
-    initialize_enemy(pseudo3d);
+    initialize_pseudo3d(pseudo3d_ptr);
+    initialize_enemy(pseudo3d_ptr);
 
-    auto camera = pseudo3d->get_camera();
+    auto camera = pseudo3d_ptr->get_camera();
     auto camera_pos = new math::vector4(CAMERA_START_X, CAMERA_START_Y, CAMERA_START_Z);
     auto camera_mat = new math::matrix44();
 
@@ -75,7 +75,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
         if (1 == CheckHitKey(KEY_INPUT_S)) {
             if (!last_input_s) {
-                on_shot(pseudo3d, *camera_pos);
+                on_shot(pseudo3d_ptr, *camera_pos);
             }
 
             last_input_s = true;
@@ -86,14 +86,14 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
         process_camera(camera, *camera_pos, *camera_mat);
 
-        pseudo3d->update();
+        pseudo3d_ptr->update();
 
         ClearDrawScreen();
 #if defined(_USE_RASTERIZE)
         rasterize->clear();
 #endif
 
-        pseudo3d->render();
+        pseudo3d_ptr->render();
 
 #if defined(_USE_RASTERIZE)
         rasterize->render();
