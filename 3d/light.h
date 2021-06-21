@@ -7,7 +7,7 @@ namespace image {
 }
 
 namespace math {
-    class vector3;
+    class vector4;
 }
 
 namespace r3d {
@@ -26,7 +26,7 @@ namespace r3d {
         light& operator =(light&&) = default; // ÉÄÅ[Éu
 
     private:
-        std::unique_ptr<math::vector3> direction;
+        std::unique_ptr<math::vector4> direction;
         std::unique_ptr<image::color> diffuse;
         std::unique_ptr<image::color> speculer;
         std::unique_ptr<image::color> ambient;

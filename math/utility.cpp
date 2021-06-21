@@ -1,6 +1,6 @@
 #include <random>
 #include <cmath>
-#include "vector3.h"
+#include "vector4.h"
 #include "utility.h"
 
 namespace {
@@ -11,7 +11,7 @@ namespace {
 namespace math {
 
 #if defined(_DEBUG_3D)
-    std::shared_ptr<vector3> utility::collision_point = nullptr;
+    std::shared_ptr<vector4> utility::collision_point = nullptr;
 #endif
 
     int utility::get_random(const int min, const int max) {
@@ -21,13 +21,13 @@ namespace math {
     }
 
     // 矩形と線分の当たり判定
-    collision utility::collision_polygon_line(const vector3& polygon_point0, const vector3& polygon_point1,
-                                              const vector3& polygon_point2, const vector3& polygon_point3,
-                                              const vector3& line_start, const vector3& line_end) {
+    collision utility::collision_polygon_line(const vector4& polygon_point0, const vector4& polygon_point1,
+                                              const vector4& polygon_point2, const vector4& polygon_point3,
+                                              const vector4& line_start, const vector4& line_end) {
         // 平面の情報をセット
         const auto normal = get_normal(polygon_point0, polygon_point1, polygon_point2);
         const auto plane  = std::make_tuple(polygon_point0, normal);
-        auto result = std::make_tuple(false, vector3());
+        auto result = std::make_tuple(false, vector4());
 
         // 平面と線分が交わるか
         if (!collision_plane_line(plane, line_start, line_end, result)) {
@@ -35,10 +35,10 @@ namespace math {
         }
 
         // 平面との交点
-        const vector3 point = std::get<1>(result);
+        const vector4 point = std::get<1>(result);
 
 #if defined(_DEBUG_3D)
-        collision_point.reset(new vector3(point));
+        collision_point.reset(new vector4(point));
 #endif
 
         // 矩形を三角形に分けて判定
@@ -62,7 +62,7 @@ namespace math {
     }
 
     // 面の法線を求める
-    vector3 utility::get_normal(const vector3& point0, const vector3& point1, const vector3& point2) {
+    vector4 utility::get_normal(const vector4& point0, const vector4& point1, const vector4& point2) {
         // 面の法線を求める
         const auto v0 = point1 - point0;
         const auto v1 = point2 - point0;
@@ -72,7 +72,7 @@ namespace math {
     }
 
     // 三角形と点の内外判定(point は必ず三角形と同平面である事)
-    bool utility::inside_triangle_point(const vector3& triangle_point0, const vector3& triangle_point1, const vector3& triangle_point2, const vector3& point) {
+    bool utility::inside_triangle_point(const vector4& triangle_point0, const vector4& triangle_point1, const vector4& triangle_point2, const vector4& point) {
         const auto v01 = triangle_point1 - triangle_point0;
         const auto v12 = triangle_point2 - triangle_point1;
         const auto v21 = triangle_point0 - triangle_point2;
@@ -95,9 +95,9 @@ namespace math {
     }
 
     // 平面と線分の当たり判定
-    bool utility::collision_plane_line(const plane& p, const vector3& line_start, const vector3& line_end, collision& result) {
-        const vector3 plane_point  = std::get<0>(p);
-        const vector3 plane_normal = std::get<1>(p);
+    bool utility::collision_plane_line(const plane& p, const vector4& line_start, const vector4& line_end, collision& result) {
+        const vector4 plane_point  = std::get<0>(p);
+        const vector4 plane_normal = std::get<1>(p);
         auto point_to_start = line_start - plane_point;
         auto point_to_end   = line_end   - plane_point;
 

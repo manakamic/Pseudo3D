@@ -1,7 +1,7 @@
 #include <cmath>
 #include "utility.h"
 #include "matrix44.h"
-#include "vector3.h"
+#include "vector4.h"
 
 namespace math {
 
@@ -79,7 +79,7 @@ namespace math {
         return matrix44(result);
     }
 
-    const matrix44 matrix44::operator +(const vector3 rhs) const {
+    const matrix44 matrix44::operator +(const vector4 rhs) const {
         matrix_array result = row_column;
 
         result[3][0] += rhs.get_x();

@@ -1,5 +1,5 @@
 #include "color.h"
-#include "vector3.h"
+#include "vector4.h"
 #include "vertex.h"
 
 namespace r3d {
@@ -10,12 +10,12 @@ namespace r3d {
     }
 
     bool vertex::initialize() {
-        position.reset(new math::vector3);
+        position.reset(new math::vector4);
 
         return true;
     }
 
-    bool vertex::set_position(const math::vector3& vector) {
+    bool vertex::set_position(const math::vector4& vector) {
         if (position == nullptr) {
             return false;
         }

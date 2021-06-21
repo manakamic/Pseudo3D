@@ -1,4 +1,4 @@
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "shot.h"
 
@@ -11,7 +11,7 @@ shot::shot() : polygon_dx(polygon_dx::type_kind::shot) {
     end = false;
 }
 
-bool shot::initialize(const TCHAR* file_name, double size, math::vector3& offset) {
+bool shot::initialize(const TCHAR* file_name, double size, math::vector4& offset) {
     end = false;
     start_time = std::chrono::system_clock::now();
 
@@ -51,6 +51,6 @@ void shot::render() {
     polygon_dx::render();
 }
 
-void shot::set_move(const math::vector3& move) {
-    this->move.reset(new math::vector3(move));
+void shot::set_move(const math::vector4& move) {
+    this->move.reset(new math::vector4(move));
 }

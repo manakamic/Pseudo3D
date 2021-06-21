@@ -1,6 +1,6 @@
 #include "constants.h"
 #include "utility.h"
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "shot.h"
 #include "enemy.h"
@@ -51,7 +51,7 @@ bool initialize_pseudo3d(const std::shared_ptr<pseudo3d>& sp_pseudo3d) {
             auto end = shot_type->get_world_position();
             auto move = p_shot->get_move();
             // 終点から移動量を戻せば始点となる
-            auto start = (*end) + math::vector3(-move->get_x(), -move->get_y(), -move->get_z());
+            auto start = (*end) + math::vector4(-move->get_x(), -move->get_y(), -move->get_z());
 
             // enemy だけ処理する
             for (auto&& enemy_type : polygon_list) {
@@ -98,7 +98,7 @@ void initialize_enemy(const std::shared_ptr<pseudo3d>& pseudo3d) {
         auto png_index = math::utility::get_random(0, png_max);
         auto offset_x = math::utility::get_random(-ENEMY_RANDOM_X, ENEMY_RANDOM_X);
         auto offset_z = math::utility::get_random(0, ENEMY_RANDOM_Z);
-        auto offset = math::vector3(static_cast<double>(offset_x), 0.0, static_cast<double>(offset_z));
+        auto offset = math::vector4(static_cast<double>(offset_x), 0.0, static_cast<double>(offset_z));
 
         enemy->initialize(PNG_LIST[png_index], ENEMY_SIZE, offset);
         pseudo3d->add_polygon(enemy);

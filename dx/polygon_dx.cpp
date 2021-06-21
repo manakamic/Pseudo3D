@@ -1,6 +1,6 @@
 #include <cmath>
 #include <tuple>
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "vertex.h"
 #include "polygon_dx.h"
@@ -44,7 +44,7 @@ polygon_dx::~polygon_dx() {
 #endif
 }
 
-bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector3& offset) {
+bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& offset) {
     auto init = r3d::polygon::initialize();
     auto image = load_image(file_name);
 
@@ -52,16 +52,16 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector3& 
         return false;
     }
 
-    world_position.reset(new math::vector3(offset));
+    world_position.reset(new math::vector4(offset));
     world_matrix.reset(new math::matrix44);
 
     half_size = size / 2.0;
     
-    std::array<std::shared_ptr<math::vector3>, r3d::polygon_vertices_num> position_list = {
-         std::make_shared<math::vector3>(-half_size,  half_size, 0.0),
-         std::make_shared<math::vector3>(-half_size, -half_size, 0.0),
-         std::make_shared<math::vector3>( half_size,  half_size, 0.0),
-         std::make_shared<math::vector3>( half_size, -half_size, 0.0)
+    std::array<std::shared_ptr<math::vector4>, r3d::polygon_vertices_num> position_list = {
+         std::make_shared<math::vector4>(-half_size,  half_size, 0.0),
+         std::make_shared<math::vector4>(-half_size, -half_size, 0.0),
+         std::make_shared<math::vector4>( half_size,  half_size, 0.0),
+         std::make_shared<math::vector4>( half_size, -half_size, 0.0)
     };
     std::array<std::shared_ptr<r3d::vertex>, r3d::polygon_vertices_num> vertices_list = {
         nullptr,
@@ -169,7 +169,7 @@ void polygon_dx::render() {
 #endif
 
 #if defined(_DEBUG_3D)
-    std::shared_ptr<math::vector3> pos = world_vertices[0];
+    std::shared_ptr<math::vector4> pos = world_vertices[0];
     auto color = GetColor(255, 255, 255);
 
     DrawFormatString(std::get<0>(xyList[0]), std::get<1>(xyList[0]), color, "%.1lf\n%.1lf\n%.1lf", pos->get_x(), pos->get_y(), pos->get_z());
@@ -201,7 +201,7 @@ bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {
         auto world_pos = (*src_pos) * (*world_matrix);
         auto trans_pos = world_pos.mult_with_w(matrix);
 
-        world_vertices[i].reset(new math::vector3(world_pos));
+        world_vertices[i].reset(new math::vector4(world_pos));
 
         dst->set_position(trans_pos);
 #if defined(_USE_RASTERIZE)

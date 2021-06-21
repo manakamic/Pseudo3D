@@ -1,4 +1,4 @@
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "vertex.h"
 #include "camera.h"
@@ -16,9 +16,9 @@ namespace r3d {
     bool camera::initialize() {
 
         // デフォルトでカメラ値を設定する
-        position.reset(new math::vector3(0.0, 0.0, -10.0));
-        target.reset(new math::vector3(0.0, 0.0, 0.0));
-        up.reset(new math::vector3(0.0, 1.0, 0.0));
+        position.reset(new math::vector4(0.0, 0.0, -10.0));
+        target.reset(new math::vector4(0.0, 0.0, 0.0));
+        up.reset(new math::vector4(0.0, 1.0, 0.0));
 
         matrix.reset(new math::matrix44);
 
@@ -64,7 +64,7 @@ namespace r3d {
         matrix.reset(new math::matrix44(row_column));
     }
 
-    bool camera::culling(const math::vector3& position0, const math::vector3& position1, const math::vector3& position2) const {
+    bool camera::culling(const math::vector4& position0, const math::vector4& position1, const math::vector4& position2) const {
         // 視線の逆ベクトル
         auto inv_eye = (*position) - (*target);
 
@@ -87,7 +87,7 @@ namespace r3d {
         return true;
     }
 
-    bool camera::set_position(const math::vector3& position) {
+    bool camera::set_position(const math::vector4& position) {
         if (this->position == nullptr) {
             return false;
         }
@@ -97,7 +97,7 @@ namespace r3d {
         return true;
     }
 
-    bool camera::set_target(const math::vector3& target) {
+    bool camera::set_target(const math::vector4& target) {
         if (this->target == nullptr) {
             return false;
         }

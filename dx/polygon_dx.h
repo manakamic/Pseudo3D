@@ -8,7 +8,7 @@
 #include "polygon.h"
 
 namespace math {
-    class vector3;
+    class vector4;
     class matrix44;
 }
 
@@ -34,7 +34,7 @@ public:
 
     type_kind get_type_kind() const { return type; }
 
-    virtual bool initialize(const TCHAR* file_name, double size, math::vector3& offset);
+    virtual bool initialize(const TCHAR* file_name, double size, math::vector4& offset);
     virtual void update();
     virtual void render();
 
@@ -43,8 +43,8 @@ public:
     bool is_culling() const { return culling; }
     void set_culling(const bool culling) { this->culling = culling; }
 
-    std::shared_ptr<math::vector3> get_world_position() const { return world_position; }
-    std::shared_ptr<math::vector3> get_world_position(const int index) const { return world_vertices[index]; }
+    std::shared_ptr<math::vector4> get_world_position() const { return world_position; }
+    std::shared_ptr<math::vector4> get_world_position(const int index) const { return world_vertices[index]; }
 
     void set_function(const std::function<void(const polygon_dx* instance)> function) { update_function = function; }
 
@@ -59,12 +59,12 @@ protected:
 
     bool culling;
 
-    std::shared_ptr<math::vector3> world_position;
+    std::shared_ptr<math::vector4> world_position;
     std::unique_ptr<math::matrix44> world_matrix;
 
     std::function<void(const polygon_dx* instance)> update_function;
 
-    std::array<std::shared_ptr<math::vector3>, r3d::polygon_vertices_num> world_vertices;
+    std::array<std::shared_ptr<math::vector4>, r3d::polygon_vertices_num> world_vertices;
 
     std::chrono::system_clock::time_point start_time;
 };

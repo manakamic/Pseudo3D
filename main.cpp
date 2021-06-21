@@ -7,7 +7,7 @@
 #include "DxLib.h"
 #include "constants.h"
 #include "utility.h"
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "camera.h"
 #include "enemy.h"
@@ -60,7 +60,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     initialize_enemy(pseudo3d);
 
     auto camera = pseudo3d->get_camera();
-    auto camera_pos = new math::vector3(CAMERA_START_X, CAMERA_START_Y, CAMERA_START_Z);
+    auto camera_pos = new math::vector4(CAMERA_START_X, CAMERA_START_Y, CAMERA_START_Z);
     auto camera_mat = new math::matrix44();
 
     camera->set_position(*camera_pos);

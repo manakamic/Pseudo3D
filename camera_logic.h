@@ -6,8 +6,8 @@ namespace r3d {
 }
 
 namespace math {
-    class vector3;
+    class vector4;
     class matrix44;
 }
 
-void process_camera(const std::shared_ptr<r3d::camera>& camera, math::vector3& camera_pos, math::matrix44& camera_mat);
+void process_camera(const std::shared_ptr<r3d::camera>& camera, math::vector4& camera_pos, math::matrix44& camera_mat);

@@ -2,7 +2,7 @@
 #include <cmath>
 #include <tuple>
 #include <algorithm>
-#include "vector3.h"
+#include "vector4.h"
 #include "vertex.h"
 #include "utility.h"
 #include "DxLib.h"
@@ -101,8 +101,8 @@ namespace {
     }
 
     // 最小と最大の組み合わせを返す
-    std::tuple<int, int, int, int> get_min_max(const std::shared_ptr<math::vector3>& v0, const std::shared_ptr<math::vector3>& v1,
-                                               const std::shared_ptr<math::vector3>& v2, const std::shared_ptr<math::vector3>& v3) {
+    std::tuple<int, int, int, int> get_min_max(const std::shared_ptr<math::vector4>& v0, const std::shared_ptr<math::vector4>& v1,
+                                               const std::shared_ptr<math::vector4>& v2, const std::shared_ptr<math::vector4>& v3) {
         auto x = { v0->get_x(),  v1->get_x(),  v2->get_x(),  v3->get_x() };
         auto y = { v0->get_y(),  v1->get_y(),  v2->get_y(),  v3->get_y() };
 
@@ -124,7 +124,7 @@ namespace {
     std::tuple<double, double, double> get_perspective_uvz(const std::shared_ptr<r3d::vertex>& v0,
                                                            const std::shared_ptr<r3d::vertex>& v1,
                                                            const std::shared_ptr<r3d::vertex>& v2,
-                                                           const math::vector3& point) {
+                                                           const math::vector4& point) {
         // 各引数の各値をローカル変数に取る
         auto p0 = v0->get_position(); auto p1 = v1->get_position(); auto p2 = v2->get_position();
         auto p0_x = p0->get_x(); auto p0_y = p0->get_y(); auto p0_z = p0->get_z(); auto p0_w = p0->get_w();
@@ -245,10 +245,10 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
     auto p2 = vertices[2]->get_position();
     auto p3 = vertices[3]->get_position();
 
-    auto v0 = math::vector3(p0->get_x(), p0->get_y(), 0.0f);
-    auto v1 = math::vector3(p1->get_x(), p1->get_y(), 0.0f);
-    auto v2 = math::vector3(p2->get_x(), p2->get_y(), 0.0f);
-    auto v3 = math::vector3(p3->get_x(), p3->get_y(), 0.0f);
+    auto v0 = math::vector4(p0->get_x(), p0->get_y(), 0.0f);
+    auto v1 = math::vector4(p1->get_x(), p1->get_y(), 0.0f);
+    auto v2 = math::vector4(p2->get_x(), p2->get_y(), 0.0f);
+    auto v3 = math::vector4(p3->get_x(), p3->get_y(), 0.0f);
 
     // 4 頂点を含む最小の矩形でループさせる
     auto min_max = get_min_max(p0, p1, p2, p3);
@@ -269,7 +269,7 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
                 continue;
             }
 
-            auto p = math::vector3(static_cast<double>(x), static_cast<double>(y), 0.0f);
+            auto p = math::vector4(static_cast<double>(x), static_cast<double>(y), 0.0f);
             auto u = 0.0; auto v = 0.0; auto z = 0.0;
             auto depth_pos = y * height + x;
             auto in = false;

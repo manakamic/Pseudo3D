@@ -1,4 +1,4 @@
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "vertex.h"
 #include "polygon.h"
@@ -60,14 +60,14 @@ namespace r3d {
         vertices[3] = v3;
     }
 
-    bool polygon::get_center(math::vector3& center, const bool transform) const {
+    bool polygon::get_center(math::vector4& center, const bool transform) const {
         std::array<std::shared_ptr<r3d::vertex>, polygon_vertices_num> v = transform ? transform_vertices : vertices;
 
         if (v[0] == nullptr || v[1] == nullptr || v[2] == nullptr || v[3] == nullptr) {
             return false;
         }
 
-        center = math::vector3();
+        center = math::vector4();
         auto  count = 0.0;
 
         for (auto i = 0; i < polygon_vertices_num; ++i) {

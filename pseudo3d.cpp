@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "camera.h"
 #include "perspective.h"
@@ -115,8 +115,8 @@ void pseudo3d::transform() {
     if (polygon_list.size() > 1) {
         // ポリゴンの重心の Z 値でソート
         auto compare = [](const std::shared_ptr<polygon_dx>& lhs, const std::shared_ptr<polygon_dx>& rhs) -> bool {
-            auto lhs_center = math::vector3();
-            auto rhs_center = math::vector3();
+            auto lhs_center = math::vector4();
+            auto rhs_center = math::vector4();
 
             lhs->get_center(lhs_center, true);
             rhs->get_center(rhs_center, true);

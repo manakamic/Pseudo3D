@@ -5,7 +5,7 @@
 #include <tuple>
 
 namespace math {
-    class vector3;
+    class vector4;
 
     constexpr uint32_t row_max = 4;
     constexpr uint32_t column_max = 4;
@@ -27,7 +27,7 @@ namespace math {
         matrix44& operator =(matrix44&&) = default; // ÉÄÅ[Éu
 
         const matrix44 operator *(const matrix44 rhs) const;
-        const matrix44 operator +(const vector3 rhs) const;
+        const matrix44 operator +(const vector4 rhs) const;
 
         const double get_value(const uint32_t row, const uint32_t column) const { return row_column[row][column]; }
         const double set_value(const uint32_t row, const uint32_t column, const double value) { row_column[row][column] = value; }

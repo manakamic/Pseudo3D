@@ -1,5 +1,5 @@
 #include "constants.h"
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "pseudo3d.h"
 #include "shot.h"
@@ -18,7 +18,7 @@ namespace {
     auto shot_num = 0;
 }
 
-bool on_shot(const std::shared_ptr<pseudo3d>& pseudo3d, const math::vector3& camera_pos) {
+bool on_shot(const std::shared_ptr<pseudo3d>& pseudo3d, const math::vector4& camera_pos) {
     std::shared_ptr<shot> shot_instance = nullptr;
     shot* p_shot = nullptr;
     auto instance = pseudo3d->get_shot();
@@ -41,11 +41,11 @@ bool on_shot(const std::shared_ptr<pseudo3d>& pseudo3d, const math::vector3& cam
     }
 
     // カメラの方向ベクトル
-    auto dir = math::vector3(-camera_pos.get_x(), 0.0, -camera_pos.get_z());
+    auto dir = math::vector4(-camera_pos.get_x(), 0.0, -camera_pos.get_z());
 
     dir.normalized();
 
-    auto offset = math::vector3(camera_pos.get_x(), SHOT_Y, camera_pos.get_z()) + (dir * SHOT_OFFSET_SIZE);
+    auto offset = math::vector4(camera_pos.get_x(), SHOT_Y, camera_pos.get_z()) + (dir * SHOT_OFFSET_SIZE);
 
     p_shot->initialize(SHOT_PNG, SHOT_SIZE, offset);
 

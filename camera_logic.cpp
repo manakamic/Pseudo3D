@@ -1,5 +1,5 @@
 #include "constants.h"
-#include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 #include "camera.h"
 #include "camera_logic.h"
@@ -9,11 +9,11 @@ namespace {
     constexpr auto CAMERA_MOVO_SIZE = 0.5;
 }
 
-void process_camera(const std::shared_ptr<r3d::camera>& camera, math::vector3& camera_pos, math::matrix44& camera_mat) {
+void process_camera(const std::shared_ptr<r3d::camera>& camera, math::vector4& camera_pos, math::matrix44& camera_mat) {
     auto set_pos = false;
     auto move = [&camera_pos](bool up) {
         // カメラの方向ベクトル
-        auto dir = math::vector3(-camera_pos.get_x(), 0.0, -camera_pos.get_z());
+        auto dir = math::vector4(-camera_pos.get_x(), 0.0, -camera_pos.get_z());
         auto size = up ? CAMERA_MOVO_SIZE : -CAMERA_MOVO_SIZE;
 
         dir.normalized();

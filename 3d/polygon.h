@@ -5,7 +5,7 @@
 #include <array>
 
 namespace math {
-    class vector3;
+    class vector4;
     class matrix44;
 }
 
@@ -34,7 +34,7 @@ namespace r3d {
                           const std::shared_ptr<r3d::vertex>& v2, const std::shared_ptr<r3d::vertex>& v3);
 
         const std::shared_ptr<r3d::vertex> get_vertex(const uint32_t number) const { return vertices[number]; }
-        bool get_center(math::vector3& center, const bool transform) const;
+        bool get_center(math::vector4& center, const bool transform) const;
 
     protected:
         std::array<std::shared_ptr<r3d::vertex>, polygon_vertices_num> vertices;
