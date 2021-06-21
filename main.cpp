@@ -44,9 +44,9 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     }
 
 #if defined(_USE_RASTERIZE)
-    std::shared_ptr<rasterize> rasterize(new rasterize);
+    std::shared_ptr<rasterize> rasterize_ptr(new rasterize);
 
-    if (!rasterize->initialize(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+    if (!rasterize_ptr->initialize(SCREEN_WIDTH, SCREEN_HEIGHT)) {
         DxLib_End();
         return -1;
     }
@@ -90,13 +90,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
         ClearDrawScreen();
 #if defined(_USE_RASTERIZE)
-        rasterize->clear();
+        rasterize_ptr->clear();
 #endif
 
         pseudo3d_ptr->render();
 
 #if defined(_USE_RASTERIZE)
-        rasterize->render();
+        rasterize_ptr->render();
 #endif
 
         ScreenFlip();
