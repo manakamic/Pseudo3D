@@ -14,7 +14,6 @@ namespace r3d {
 
 #if defined(_USE_LIGHTING)
         normal = nullptr;
-        ambient = nullptr;
         diffuse = nullptr;
         speculer = nullptr;
         speculer_power = 1.0;
@@ -25,7 +24,6 @@ namespace r3d {
         position.reset(new math::vector4);
 #if defined(_USE_LIGHTING)
         normal.reset(new math::vector4);
-        ambient.reset(new image::color);
         diffuse.reset(new image::color);
         speculer.reset(new image::color);
 #endif
@@ -50,16 +48,6 @@ namespace r3d {
         }
 
         normal->set(vector);
-
-        return true;
-    }
-
-    bool vertex::set_ambient(const image::color& color) {
-        if (ambient == nullptr) {
-            return false;
-        }
-
-        ambient->set(color);
 
         return true;
     }

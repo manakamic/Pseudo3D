@@ -6,6 +6,9 @@
 #include "enemy.h"
 #include "pseudo3d.h"
 #include "pseudo3d_logic.h"
+#if defined(_USE_LIGHTING)
+#include "camera.h"
+#endif
 
 namespace {
     constexpr auto ENEMY_RANDOM_X = 25;
@@ -89,7 +92,11 @@ bool initialize_pseudo3d(const std::shared_ptr<pseudo3d>& sp_pseudo3d) {
     return true;
 }
 
-void initialize_enemy(const std::shared_ptr<pseudo3d>& pseudo3d) {
+#if defined(_USE_LIGHTING)
+void initialize_enemy(const std::shared_ptr<pseudo3d>& pseudo3d, std::shared_ptr<r3d::camera>& camera) {
+#else
+void initialize_enemy(const std::shared_ptr<pseudo3d>&pseudo3d) {
+#endif
     auto enemy_num = math::utility::get_random(ENEMY_MIN, ENEMY_MAX);
     auto png_max = static_cast<int>(PNG_LIST.size()) - 1;
 
@@ -102,5 +109,9 @@ void initialize_enemy(const std::shared_ptr<pseudo3d>& pseudo3d) {
 
         enemy_ptr->initialize(PNG_LIST[png_index], ENEMY_SIZE, offset);
         pseudo3d->add_polygon(enemy_ptr);
+
+#if defined(_USE_LIGHTING)
+        enemy_ptr->set_camera(camera);
+#endif
     }
 }

@@ -42,9 +42,6 @@ namespace r3d {
         bool set_normal(const math::vector4& vector);
         const std::shared_ptr<math::vector4> get_normal() const { return normal; }
 
-        bool set_ambient(const image::color& color);
-        const std::shared_ptr<image::color> get_ambient() const { return ambient; }
-
         bool set_diffuse(const image::color& color);
         const std::shared_ptr<image::color> get_diffuse() const { return diffuse; }
 
@@ -60,7 +57,6 @@ namespace r3d {
 
 #if defined(_USE_LIGHTING)
         std::shared_ptr<math::vector4> normal;
-        std::shared_ptr<image::color> ambient;
         std::shared_ptr<image::color> diffuse;
         std::shared_ptr<image::color> speculer;
         double speculer_power;

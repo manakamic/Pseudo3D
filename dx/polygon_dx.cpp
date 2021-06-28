@@ -78,10 +78,9 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
 #endif
 #if defined(_USE_LIGHTING)
     auto normal = math::vector4(0.0, 0.0, -1.0);
-    auto ambient = image::color(64, 64, 64);
     auto diffuse = image::color();
     auto speculer = image::color();
-    auto speculer_power = 1.0;
+    auto speculer_power = 0.001;
 #endif
 
     for (int i = 0; i < r3d::polygon_vertices_num; ++i) {
@@ -94,7 +93,6 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
 #endif
 #if defined(_USE_LIGHTING)
         vertex->set_normal(normal);
-        vertex->set_ambient(ambient);
         vertex->set_diffuse(diffuse);
         vertex->set_speculer(speculer, speculer_power);
 #endif
@@ -175,7 +173,11 @@ void polygon_dx::render() {
     }
 
 #if defined(_USE_RASTERIZE)
+#if defined(_USE_LIGHTING)
+    rasterize::Draw(transform_vertices, image_list[handle], camera_ptr);
+#else
     rasterize::Draw(transform_vertices, image_list[handle]);
+#endif
 #else
     DrawModiGraph(std::get<0>(xyList[0]), std::get<1>(xyList[0]),
                   std::get<0>(xyList[2]), std::get<1>(xyList[2]),
@@ -230,10 +232,10 @@ bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {
             return false;
         }
 
-        auto world_normal = (*src_normal) * (*world_matrix);
+        // 法線はワールドマトリクスの回転成分のみを適応
+        auto world_normal = (*src_normal) * world_matrix->get_rotate();
 
         dst->set_normal(world_normal);
-        dst->set_ambient(*src->get_ambient());
         dst->set_diffuse(*src->get_diffuse());
         dst->set_speculer(*src->get_speculer(), src->get_speculer_power());
 #endif

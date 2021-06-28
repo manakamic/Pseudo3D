@@ -57,7 +57,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     std::shared_ptr<pseudo3d> pseudo3d_ptr(new pseudo3d);
 
     initialize_pseudo3d(pseudo3d_ptr);
-    initialize_enemy(pseudo3d_ptr);
 
     auto camera = pseudo3d_ptr->get_camera();
     auto camera_pos = new math::vector4(CAMERA_START_X, CAMERA_START_Y, CAMERA_START_Z);
@@ -65,6 +64,12 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     camera->set_position(*camera_pos);
     camera->set_target(0.0, CAMERA_START_Y, 0.0);
+
+#if defined(_USE_LIGHTING)
+    initialize_enemy(pseudo3d_ptr, camera);
+#else
+    initialize_enemy(pseudo3d_ptr);
+#endif
 
     auto last_input_s = false;
 

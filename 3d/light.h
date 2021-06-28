@@ -27,15 +27,11 @@ namespace r3d {
 
         bool initialize();
         bool set_direction(const math::vector4& vector);
-        bool set_ambient(const image::color& color);
-        bool set_diffuse(const image::color& color);
-        bool set_speculer(const image::color& color);
+
+        const std::shared_ptr<math::vector4> get_direction() const { return direction; }
 
     private:
         std::shared_ptr<math::vector4> direction;
-        std::shared_ptr<image::color> ambient;
-        std::shared_ptr<image::color> diffuse;
-        std::shared_ptr<image::color> speculer;
     };
 
 } // r3d

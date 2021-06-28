@@ -9,6 +9,12 @@ namespace math {
     class matrix44;
 }
 
+#if defined(_USE_LIGHTING)
+namespace r3d {
+    class camera;
+}
+#endif
+
 namespace r3d {
     class vertex;
 
@@ -36,9 +42,17 @@ namespace r3d {
         const std::shared_ptr<r3d::vertex> get_vertex(const uint32_t number) const { return vertices[number]; }
         bool get_center(math::vector4& center, const bool transform) const;
 
+#if defined(_USE_LIGHTING)
+        void set_camera(const std::shared_ptr<r3d::camera>& camera) { camera_ptr = camera; }
+#endif
+
     protected:
         std::array<std::shared_ptr<r3d::vertex>, polygon_vertices_num> vertices;
         std::array<std::shared_ptr<r3d::vertex>, polygon_vertices_num> transform_vertices;
+
+#if defined(_USE_LIGHTING)
+        std::shared_ptr<r3d::camera> camera_ptr;
+#endif
     };
 
 } // r3d

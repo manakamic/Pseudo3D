@@ -8,6 +8,7 @@
 #include "DxLib.h"
 #include "rasterize.h"
 #if defined(_USE_LIGHTING)
+#include "camera.h"
 #include "color.h"
 #include "light.h"
 #endif
@@ -42,16 +43,11 @@ namespace {
 
         light_ptr->initialize();
 
-        auto direction = math::vector4(1.0, -1.0, 1.0);
-        auto ambient = image::color();
-        auto diffuse = image::color();
-        auto speculer = image::color();
+        auto direction = math::vector4(0.0, 0.0, 1.0);
 
         direction.normalized();
-        light_ptr->set_direction(direction);
-        light_ptr->set_ambient(ambient);
-        light_ptr->set_diffuse(diffuse);
-        light_ptr->set_speculer(speculer);
+
+        light_ptr->set_direction(direction.normalize());
 
         return true;
     }
@@ -151,7 +147,7 @@ namespace {
 #if !defined(_USE_LIGHTING)
     std::tuple<double, double, double>
 #else
-    std::tuple<double, double, double, math::vector4, image::color, image::color, image::color, double>
+    std::tuple<double, double, double, math::vector4, image::color, image::color, double>
 #endif
         get_perspective_uvz(const std::shared_ptr<r3d::vertex>& v0,
                             const std::shared_ptr<r3d::vertex>& v1,
@@ -194,8 +190,7 @@ namespace {
         auto n0 = v0->get_normal(); auto n1 = v1->get_normal(); auto n2 = v2->get_normal();
         auto normal = (*n0 * rate_0) + (*n1 * rate_1) + (*n2 * rate_2);
 
-        auto a0 = v0->get_ambient(); auto a1 = v1->get_ambient(); auto a2 = v2->get_ambient();
-        auto ambient = (*a0 * rate_0) + (*a1 * rate_1) + (*a2 * rate_2);
+        normal.normalized();
 
         auto d0 = v0->get_diffuse(); auto d1 = v1->get_diffuse(); auto d2 = v2->get_diffuse();
         auto diffuse = (*d0 * rate_0) + (*d1 * rate_1) + (*d2 * rate_2);
@@ -206,7 +201,7 @@ namespace {
         auto pow0 = v0->get_speculer_power(); auto pow1 = v1->get_speculer_power(); auto pow2 = v2->get_speculer_power();
         auto speculer_power = (pow0 * rate_0) + (pow1 * rate_1) + (pow2 * rate_2);
 
-        return std::make_tuple(u, v, z, normal, ambient, diffuse, speculer, speculer_power);
+        return std::make_tuple(u, v, z, normal, diffuse, speculer, speculer_power);
 #endif
     }
 
@@ -223,14 +218,90 @@ namespace {
     }
 
 #if defined(_USE_LIGHTING)
-    png::rgba_pixel lighting(const png::rgba_pixel& src, const std::unique_ptr<r3d::light>& light_ptr, std::shared_ptr<math::vector4> normal,
-        std::shared_ptr<image::color> ambient, std::shared_ptr<image::color> diffuse, std::shared_ptr<image::color> speculer, double speculer_power) {
-        auto r = src.red;
-        auto g = src.green;
-        auto b = src.blue;
-        auto a = src.alpha;
+    png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr, std::shared_ptr<math::vector4> normal,
+                             const png::rgba_pixel& src, std::shared_ptr<image::color> diffuse, std::shared_ptr<image::color> speculer, double speculer_power) {
+        auto src_r = static_cast<double>(src.red);
+        auto src_g = static_cast<double>(src.green);
+        auto src_b = static_cast<double>(src.blue);
+        // ライトベクトル(予め反転済)
+        auto light = light_ptr->get_direction()->normalize();
+        auto normal_dir = normal->normalize();
+        // ライトと法線の内積
+        auto diffuse_dot = light.dot(normal_dir);
 
-        return png::rgba_pixel(r, g, b, a);
+        if (diffuse_dot < 0.0) {
+            diffuse_dot = 0.0;
+        }
+        else if (diffuse_dot > 1.0) {
+            diffuse_dot = 1.0;
+        }
+
+        // 擬似拡散反射
+        auto diffuse_r = static_cast<double>(diffuse->get_r()) / 255.0;
+        auto diffuse_g = static_cast<double>(diffuse->get_g()) / 255.0;
+        auto diffuse_b = static_cast<double>(diffuse->get_b()) / 255.0;
+        auto dr = diffuse_r * diffuse_dot;
+        auto dg = diffuse_g * diffuse_dot;
+        auto db = diffuse_b * diffuse_dot;
+
+        // 擬似鏡面反射(ハーフベクトル)
+        auto speculer_r = static_cast<double>(speculer->get_r()) / 255.0;
+        auto speculer_g = static_cast<double>(speculer->get_g()) / 255.0;
+        auto speculer_b = static_cast<double>(speculer->get_b()) / 255.0;
+#if false
+        // 視線ベクトルを反転
+        auto camera_target = camera->get_target();
+        auto eye = math::vector4(-camera_target->get_x(), -camera_target->get_y(), -camera_target->get_z(), camera_target->get_w());
+        auto half = math::vector4(eye.get_x() + light.get_x(), eye.get_y() + light.get_y(), eye.get_z() + light.get_z());
+
+        half.normalized();
+
+        auto speculer_dot = half.dot(normal_dir);
+
+        if (speculer_dot < 0.0) {
+            speculer_dot = 0.0;
+        } else if (speculer_dot > 1.0) {
+            speculer_dot = 1.0;
+        }
+
+        auto speculer_pow = std::pow(speculer_dot, speculer_power);
+#else
+        auto speculer_pow = 0.0;
+#endif
+
+        if (dr > 0) {
+            dr += speculer_r * speculer_pow;
+        }
+
+        if (dg > 0) {
+            dg += speculer_g * speculer_pow;
+        }
+
+        if (db > 0) {
+            db += speculer_b * speculer_pow;
+        }
+
+        src_r *= dr;
+        src_g *= dg;
+        src_b *= db;
+
+        if (src_r > 255.0) {
+            src_r = 255.0;
+        }
+
+        if (src_g > 255.0) {
+            src_g = 255.0;
+        }
+
+        if (src_b > 255.0) {
+            src_b = 255.0;
+        }
+
+        auto r = static_cast<png::byte>(std::round(src_r));
+        auto g = static_cast<png::byte>(std::round(src_g));
+        auto b = static_cast<png::byte>(std::round(src_b));
+
+        return png::rgba_pixel(r, g, b, src.alpha);
     }
 #endif
 
@@ -291,7 +362,11 @@ namespace {
     }
 }
 
-void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image) {
+#if defined(_USE_LIGHTING)
+void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image, const std::shared_ptr<r3d::camera>& camera) {
+#else
+void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices, const png::image <png::rgba_pixel>&image) {
+#endif
     auto width = static_cast<int>(buffer00.get_width());
     auto height = static_cast<int>(buffer00.get_height());
 
@@ -335,7 +410,6 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
             auto in = false;
 #if defined(_USE_LIGHTING)
             std::shared_ptr<math::vector4> normal = nullptr;
-            std::shared_ptr<image::color> ambient = nullptr;
             std::shared_ptr<image::color> diffuse = nullptr;
             std::shared_ptr<image::color> speculer = nullptr;
             auto speculer_power = 1.0;
@@ -350,10 +424,9 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
 
 #if defined(_USE_LIGHTING)
                 normal.reset(new math::vector4(std::get<3>(uvz)));
-                ambient.reset(new image::color(std::get<4>(uvz)));
-                diffuse.reset(new image::color(std::get<5>(uvz)));
-                speculer.reset(new image::color(std::get<6>(uvz)));
-                speculer_power = std::get<7>(uvz);
+                diffuse.reset(new image::color(std::get<4>(uvz)));
+                speculer.reset(new image::color(std::get<5>(uvz)));
+                speculer_power = std::get<6>(uvz);
 #endif
             }
             else if (math::utility::inside_triangle_point(v1, v3, v2, p)) {
@@ -364,10 +437,9 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
 
 #if defined(_USE_LIGHTING)
                 normal.reset(new math::vector4(std::get<3>(uvz)));
-                ambient.reset(new image::color(std::get<4>(uvz)));
-                diffuse.reset(new image::color(std::get<5>(uvz)));
-                speculer.reset(new image::color(std::get<6>(uvz)));
-                speculer_power = std::get<7>(uvz);
+                diffuse.reset(new image::color(std::get<4>(uvz)));
+                speculer.reset(new image::color(std::get<5>(uvz)));
+                speculer_power = std::get<6>(uvz);
 #endif
             }
 
@@ -375,7 +447,7 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices
 #if defined(_USE_LIGHTING)
                 auto src = get_rgba_with_uv(u, v, image);
                 // ライティング処理
-                auto pixel = lighting(src, light_ptr, normal, ambient, diffuse, speculer, speculer_power);
+                auto pixel = lighting(camera, light_ptr, normal, src, diffuse, speculer, speculer_power);
 #else
                 auto pixel = get_rgba_with_uv(u, v, image);
 #endif
