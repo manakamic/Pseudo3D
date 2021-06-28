@@ -147,7 +147,7 @@ namespace {
 #if !defined(_USE_LIGHTING)
     std::tuple<double, double, double>
 #else
-    std::tuple<double, double, double, math::vector4, image::color, image::color, double>
+    std::tuple<double, double, double, math::vector4, math::vector4, image::color, image::color, double>
 #endif
         get_perspective_uvz(const std::shared_ptr<r3d::vertex>& v0,
                             const std::shared_ptr<r3d::vertex>& v1,
@@ -187,6 +187,8 @@ namespace {
 #if !defined(_USE_LIGHTING)
         return std::make_tuple(u, v, z);
 #else
+        auto position = (*p0 * rate_0) + (*p1 * rate_1) + (*p2 * rate_2);
+
         auto n0 = v0->get_normal(); auto n1 = v1->get_normal(); auto n2 = v2->get_normal();
         auto normal = (*n0 * rate_0) + (*n1 * rate_1) + (*n2 * rate_2);
 
@@ -201,7 +203,7 @@ namespace {
         auto pow0 = v0->get_speculer_power(); auto pow1 = v1->get_speculer_power(); auto pow2 = v2->get_speculer_power();
         auto speculer_power = (pow0 * rate_0) + (pow1 * rate_1) + (pow2 * rate_2);
 
-        return std::make_tuple(u, v, z, normal, diffuse, speculer, speculer_power);
+        return std::make_tuple(u, v, z, position, normal, diffuse, speculer, speculer_power);
 #endif
     }
 
@@ -218,7 +220,8 @@ namespace {
     }
 
 #if defined(_USE_LIGHTING)
-    png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr, std::shared_ptr<math::vector4> normal,
+    png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
+                             const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
                              const png::rgba_pixel& src, std::shared_ptr<image::color> diffuse, std::shared_ptr<image::color> speculer, double speculer_power) {
         auto src_r = static_cast<double>(src.red);
         auto src_g = static_cast<double>(src.green);
@@ -249,9 +252,13 @@ namespace {
         auto speculer_g = static_cast<double>(speculer->get_g()) / 255.0;
         auto speculer_b = static_cast<double>(speculer->get_b()) / 255.0;
 #if false
-        // 視線ベクトルを反転
-        auto camera_target = camera->get_target();
-        auto eye = math::vector4(-camera_target->get_x(), -camera_target->get_y(), -camera_target->get_z(), camera_target->get_w());
+        // 視線ベクトル
+        auto camera_position = camera->get_position();
+        auto eye = math::vector4(camera_position->get_x() - position->get_x(), camera_position->get_y() - position->get_y(), camera_position->get_z() - position->get_z());
+
+        eye.normalized();
+
+        // 視線とライトのハーフベクトル
         auto half = math::vector4(eye.get_x() + light.get_x(), eye.get_y() + light.get_y(), eye.get_z() + light.get_z());
 
         half.normalized();
@@ -409,6 +416,7 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
             auto depth_pos = y * height + x;
             auto in = false;
 #if defined(_USE_LIGHTING)
+            std::shared_ptr<math::vector4> position = nullptr;
             std::shared_ptr<math::vector4> normal = nullptr;
             std::shared_ptr<image::color> diffuse = nullptr;
             std::shared_ptr<image::color> speculer = nullptr;
@@ -423,10 +431,11 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
                 in = true;
 
 #if defined(_USE_LIGHTING)
-                normal.reset(new math::vector4(std::get<3>(uvz)));
-                diffuse.reset(new image::color(std::get<4>(uvz)));
-                speculer.reset(new image::color(std::get<5>(uvz)));
-                speculer_power = std::get<6>(uvz);
+                position.reset(new math::vector4(std::get<3>(uvz)));
+                normal.reset(new math::vector4(std::get<4>(uvz)));
+                diffuse.reset(new image::color(std::get<5>(uvz)));
+                speculer.reset(new image::color(std::get<6>(uvz)));
+                speculer_power = std::get<7>(uvz);
 #endif
             }
             else if (math::utility::inside_triangle_point(v1, v3, v2, p)) {
@@ -436,10 +445,11 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
                 in = true;
 
 #if defined(_USE_LIGHTING)
-                normal.reset(new math::vector4(std::get<3>(uvz)));
-                diffuse.reset(new image::color(std::get<4>(uvz)));
-                speculer.reset(new image::color(std::get<5>(uvz)));
-                speculer_power = std::get<6>(uvz);
+                position.reset(new math::vector4(std::get<3>(uvz)));
+                normal.reset(new math::vector4(std::get<4>(uvz)));
+                diffuse.reset(new image::color(std::get<5>(uvz)));
+                speculer.reset(new image::color(std::get<6>(uvz)));
+                speculer_power = std::get<7>(uvz);
 #endif
             }
 
@@ -447,7 +457,7 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
 #if defined(_USE_LIGHTING)
                 auto src = get_rgba_with_uv(u, v, image);
                 // ライティング処理
-                auto pixel = lighting(camera, light_ptr, normal, src, diffuse, speculer, speculer_power);
+                auto pixel = lighting(camera, light_ptr, position, normal, src, diffuse, speculer, speculer_power);
 #else
                 auto pixel = get_rgba_with_uv(u, v, image);
 #endif

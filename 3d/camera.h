@@ -35,13 +35,9 @@ namespace r3d {
         const std::shared_ptr<math::vector4> get_position() const { return position; }
         const std::shared_ptr<math::matrix44> get_matrix() const { return matrix; }
 
-#if defined(_USE_LIGHTING)
-        const std::shared_ptr<math::vector4> get_target() const { return target; }
-#endif
-
     private:
         std::shared_ptr<math::vector4> position;
-        std::shared_ptr<math::vector4> target;
+        std::unique_ptr<math::vector4> target;
         std::unique_ptr<math::vector4> up;
 
         std::shared_ptr<math::matrix44> matrix;
