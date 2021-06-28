@@ -51,7 +51,8 @@ namespace r3d {
             dst->set_uv(src->get_uv());
 #endif
 #if defined(_USE_LIGHTING)
-            // TODO : –@ü‚Ìˆ—
+            // TODO : ’¸“_‚Æ–@ü‚Ìˆ—
+            dst->set_world_position(*src_pos);
             dst->set_normal(*src->get_normal());
             dst->set_diffuse(*src->get_diffuse());
             dst->set_speculer(*src->get_speculer(), src->get_speculer_power());

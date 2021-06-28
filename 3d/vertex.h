@@ -39,6 +39,9 @@ namespace r3d {
         const std::array<double, uv_max> get_uv() const { return uv; }
 
 #if defined(_USE_LIGHTING)
+        bool set_world_position(const math::vector4& vector);
+        const std::shared_ptr<math::vector4> get_world_position() const { return world_position; }
+
         bool set_normal(const math::vector4& vector);
         const std::shared_ptr<math::vector4> get_normal() const { return normal; }
 
@@ -56,6 +59,7 @@ namespace r3d {
         std::array<double, uv_max> uv;
 
 #if defined(_USE_LIGHTING)
+        std::shared_ptr<math::vector4> world_position;
         std::shared_ptr<math::vector4> normal;
         std::shared_ptr<image::color> diffuse;
         std::shared_ptr<image::color> speculer;

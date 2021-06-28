@@ -235,6 +235,7 @@ bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {
         // 法線はワールドマトリクスの回転成分のみを適応
         auto world_normal = (*src_normal) * world_matrix->get_rotate();
 
+        dst->set_world_position(world_pos);
         dst->set_normal(world_normal);
         dst->set_diffuse(*src->get_diffuse());
         dst->set_speculer(*src->get_speculer(), src->get_speculer_power());

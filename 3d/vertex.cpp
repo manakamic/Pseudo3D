@@ -13,6 +13,7 @@ namespace r3d {
         uv.fill(0.0);
 
 #if defined(_USE_LIGHTING)
+        world_position = nullptr;
         normal = nullptr;
         diffuse = nullptr;
         speculer = nullptr;
@@ -23,6 +24,7 @@ namespace r3d {
     bool vertex::initialize() {
         position.reset(new math::vector4);
 #if defined(_USE_LIGHTING)
+        world_position.reset(new math::vector4);
         normal.reset(new math::vector4);
         diffuse.reset(new image::color);
         speculer.reset(new image::color);
@@ -42,6 +44,16 @@ namespace r3d {
     }
 
 #if defined(_USE_LIGHTING)
+    bool vertex::set_world_position(const math::vector4& vector) {
+        if (world_position == nullptr) {
+            return false;
+        }
+
+        world_position->set(vector);
+
+        return true;
+    }
+
     bool vertex::set_normal(const math::vector4& vector) {
         if (normal == nullptr) {
             return false;

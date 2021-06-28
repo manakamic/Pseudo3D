@@ -187,7 +187,8 @@ namespace {
 #if !defined(_USE_LIGHTING)
         return std::make_tuple(u, v, z);
 #else
-        auto position = (*p0 * rate_0) + (*p1 * rate_1) + (*p2 * rate_2);
+        auto wp0 = v0->get_world_position(); auto wp1 = v1->get_world_position(); auto wp2 = v2->get_world_position();
+        auto position = (*wp0 * rate_0) + (*wp1 * rate_1) + (*wp2 * rate_2);
 
         auto n0 = v0->get_normal(); auto n1 = v1->get_normal(); auto n2 = v2->get_normal();
         auto normal = (*n0 * rate_0) + (*n1 * rate_1) + (*n2 * rate_2);
