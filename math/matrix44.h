@@ -44,6 +44,8 @@ namespace math {
         void rotate_y(const double degree, bool make);
         void rotate_z(const double degree, bool make);
 
+        const matrix44 get_rotate() const;
+
     private:
         std::tuple<double, double> get_sin_cos(const double degree) const;
 

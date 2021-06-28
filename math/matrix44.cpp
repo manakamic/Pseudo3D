@@ -172,6 +172,16 @@ namespace math {
         }
     }
 
+    const matrix44 matrix44::get_rotate() const {
+        matrix_array none_transfer = row_column;
+
+        none_transfer[3][0] = 0.0;
+        none_transfer[3][1] = 0.0;
+        none_transfer[3][2] = 0.0;
+
+        return matrix44(none_transfer);
+    }
+
     std::tuple<double, double> matrix44::get_sin_cos(const double degree) const {
         auto radian = utility::degree_to_radian(degree);
 
