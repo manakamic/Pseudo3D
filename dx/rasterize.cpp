@@ -43,7 +43,7 @@ namespace {
 
         light_ptr->initialize();
 
-        auto direction = math::vector4(0.0, 0.0, 1.0);
+        auto direction = math::vector4(-0.2, 0.2, 1.0);
 
         direction.normalized();
 
@@ -252,6 +252,8 @@ namespace {
         auto src_normal_y = static_cast<double>(src_normal.green) / RGBA_BASE * 2.0 - 1.0;
         auto src_normal_z = static_cast<double>(src_normal.blue)  / RGBA_BASE * 2.0 - 1.0;
         auto normal_map_normal = math::vector4(src_normal_x, src_normal_y, src_normal_z);
+
+        normal_map_normal.normalized();
 #else
     png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
                              const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
@@ -261,18 +263,25 @@ namespace {
         auto src_r = static_cast<double>(src.red);
         auto src_g = static_cast<double>(src.green);
         auto src_b = static_cast<double>(src.blue);
-        // ライトベクトル(予め反転済)
-        auto light = light_ptr->get_direction();
+        // ライトベクトル
+        auto light_dir = light_ptr->get_direction();
+        
 #if defined(_USE_NORMAL_MAP)
         // ライトを接空間へ変換
-        auto tangent_light_x = light->dot(*tangent);
-        auto tangent_light_y = light->dot(*binormal);
-        auto tangent_light_z = light->dot(*normal);
-        auto tangent_light = math::vector4(tangent_light_x, tangent_light_y, tangent_light_z);
+        auto tangent_light_x = light_dir->dot(*tangent);
+        auto tangent_light_y = light_dir->dot(*binormal);
+        auto tangent_light_z = light_dir->dot(*normal);
+        // 反転
+        auto tangent_light = math::vector4(-tangent_light_x, -tangent_light_y, -tangent_light_z);
+
+        tangent_light.normalized();
+
         auto diffuse_dot = tangent_light.dot(normal_map_normal);
 #else
+        // 反転
+        auto light = math::vector4(-light_dir->get_x(), -light_dir->get_y(), -light_dir->get_z());
         // ライトと法線の内積
-        auto diffuse_dot = light->dot(*normal);
+        auto diffuse_dot = light.dot(*normal);
 #endif
 
         if (diffuse_dot < 0.0) {
@@ -295,30 +304,48 @@ namespace {
         src_b *= db;
 
         // 擬似鏡面反射(ハーフベクトル)
-        auto speculer_r = static_cast<double>(speculer->get_r()) / RGBA_BASE;
-        auto speculer_g = static_cast<double>(speculer->get_g()) / RGBA_BASE;
-        auto speculer_b = static_cast<double>(speculer->get_b()) / RGBA_BASE;
+        auto speculer_r = static_cast<double>(speculer->get_r());
+        auto speculer_g = static_cast<double>(speculer->get_g());
+        auto speculer_b = static_cast<double>(speculer->get_b());
 #if true
         // 視線ベクトル
         auto camera_position = camera->get_position();
+
+#if defined(_USE_NORMAL_MAP)
+        auto eye = math::vector4(position->get_x() - camera_position->get_x(),
+                                 position->get_y() - camera_position->get_y(),
+                                 position->get_z() - camera_position->get_z());
+
+        eye.normalized();
+
+        // 視線を接空間へ変換
+        auto tangent_eye_x = eye.dot(*tangent);
+        auto tangent_eye_y = eye.dot(*binormal);
+        auto tangent_eye_z = eye.dot(*normal);
+        // 反転
+        auto tangent_eye = math::vector4(-tangent_eye_x, -tangent_eye_y, -tangent_eye_z);
+
+        tangent_eye.normalized();
+
+        // 視線とライトのハーフベクトル
+        auto half = math::vector4(tangent_eye.get_x() + tangent_light.get_x(),
+                                  tangent_eye.get_y() + tangent_light.get_y(),
+                                  tangent_eye.get_z() + tangent_light.get_z());
+
+        half.normalized();
+
+        auto speculer_dot = half.dot(normal_map_normal);
+#else
         auto eye = math::vector4(camera_position->get_x() - position->get_x(),
                                  camera_position->get_y() - position->get_y(),
                                  camera_position->get_z() - position->get_z());
 
         eye.normalized();
 
-#if defined(_USE_NORMAL_MAP)
-        // 視線を接空間へ変換
-        auto tangent_eye_x = eye.dot(*tangent);
-        auto tangent_eye_y = eye.dot(*binormal);
-        auto tangent_eye_z = eye.dot(*normal);
         // 視線とライトのハーフベクトル
-        auto half = math::vector4(tangent_eye_x + tangent_light_x, tangent_eye_y + tangent_light_y, tangent_eye_z + tangent_light_z) * 0.5;
+        auto half = math::vector4(eye.get_x() + light.get_x(), eye.get_y() + light.get_y(), eye.get_z() + light.get_z());
 
-        auto speculer_dot = half.dot(normal_map_normal);
-#else
-        // 視線とライトのハーフベクトル
-        auto half = math::vector4(eye.get_x() + light->get_x(), eye.get_y() + light->get_y(), eye.get_z() + light->get_z()) * 0.5;
+        half.normalized();
 
         auto speculer_dot = half.dot(*normal);
 #endif

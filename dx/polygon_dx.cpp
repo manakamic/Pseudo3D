@@ -101,7 +101,7 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
 #endif
     auto diffuse = image::color();
     auto speculer = image::color();
-    auto speculer_power = 2.0;
+    auto speculer_power = 650.0;
 #endif
 
     for (int i = 0; i < r3d::polygon_vertices_num; ++i) {

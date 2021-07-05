@@ -19,8 +19,7 @@ namespace r3d {
             return false;
         }
 
-        // —\‚ß”½“]‚µ‚Ä‚¨‚­
-        direction->set(-vector.get_x(), -vector.get_y(), -vector.get_z());
+        direction->set(vector);
 
         return true;
     }
