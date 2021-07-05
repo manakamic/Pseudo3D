@@ -16,7 +16,13 @@ class rasterize {
 public:
     // DrawModiGraph ÇÃë„ÇÌÇËÇ…ÉRÅ[ÉãÇ∑ÇÈ
 #if defined(_USE_LIGHTING)
-    static void Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image,const std::shared_ptr<r3d::camera>& camera);
+#if defined(_USE_NORMAL_MAP)
+    static void Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image,
+                     const png::image <png::rgba_pixel>& image_normal, const std::shared_ptr<r3d::camera>& camera);
+#else
+    static void Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image,
+                     const std::shared_ptr<r3d::camera>& camera);
+#endif
 #else
     static void Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image);
 #endif

@@ -49,11 +49,14 @@ public:
     void set_function(const std::function<void(const polygon_dx* instance)> function) { update_function = function; }
 
 protected:
-    bool load_image(const TCHAR* file_name);
+    bool load_image(const TCHAR* file_name, int& get_handle);
 
     type_kind type;
 
     int handle;
+#if defined(_USE_NORMAL_MAP)
+    int handle_normal_map;
+#endif
 
     double half_size;
 

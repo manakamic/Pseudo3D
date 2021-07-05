@@ -19,11 +19,17 @@ namespace {
     std::unordered_map<int, png::image <png::rgba_pixel>> image_list;
     auto name_counter = 0;
 #endif
+#if defined(_USE_NORMAL_MAP)
+    constexpr const TCHAR* normal_map_suffix = _T("_normal");
+#endif
 }
 
 polygon_dx::polygon_dx(type_kind type) {
     this->type = type;
     handle = -1;
+#if defined(_USE_NORMAL_MAP)
+    handle_normal_map = -1;
+#endif
     half_size = 0.0;
     culling = false;
     world_position = nullptr;
@@ -49,11 +55,22 @@ polygon_dx::~polygon_dx() {
 
 bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& offset) {
     auto init = r3d::polygon::initialize();
-    auto image = load_image(file_name);
+    auto image = load_image(file_name, handle);
 
     if (!init || !image) {
         return false;
     }
+
+#if defined(_USE_NORMAL_MAP)
+    auto file = std::string(file_name);
+    auto suffix = std::string(normal_map_suffix);
+    auto normal_map_file = file.insert(6, suffix);
+    auto image_normal_map = load_image(normal_map_file.c_str(), handle_normal_map);
+
+    if (!image_normal_map) {
+        return false;
+    }
+#endif
 
     world_position.reset(new math::vector4(offset));
     world_matrix.reset(new math::matrix44);
@@ -78,9 +95,13 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
 #endif
 #if defined(_USE_LIGHTING)
     auto normal = math::vector4(0.0, 0.0, -1.0);
+#if defined(_USE_NORMAL_MAP)
+    auto tangent = math::vector4(1.0, 0.0, 0.0);
+    auto binormal = math::vector4(1.0, 1.0, 0.0);
+#endif
     auto diffuse = image::color();
     auto speculer = image::color();
-    auto speculer_power = 0.001;
+    auto speculer_power = 2.0;
 #endif
 
     for (int i = 0; i < r3d::polygon_vertices_num; ++i) {
@@ -93,6 +114,10 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
 #endif
 #if defined(_USE_LIGHTING)
         vertex->set_normal(normal);
+#if defined(_USE_NORMAL_MAP)
+        vertex->set_tangent(tangent);
+        vertex->set_binormal(binormal);
+#endif
         vertex->set_diffuse(diffuse);
         vertex->set_speculer(speculer, speculer_power);
 #endif
@@ -104,7 +129,7 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
     return true;
 }
 
-bool polygon_dx::load_image(const TCHAR* file_name) {
+bool polygon_dx::load_image(const TCHAR* file_name, int& get_handle) {
     auto find = handle_list.find(file_name);
 
     if (find == handle_list.end()) {
@@ -112,23 +137,23 @@ bool polygon_dx::load_image(const TCHAR* file_name) {
         try {
             png::image <png::rgba_pixel> image(file_name);
 
-            handle = name_counter;
+            get_handle = name_counter;
             name_counter++;
 
-            image_list.emplace(handle, image);
+            image_list.emplace(get_handle, image);
         } catch (png::error& error) {
             return false;
         }
 
-        handle_list.emplace(file_name, handle);
+        handle_list.emplace(file_name, get_handle);
 
         return true;
 #else
-        handle = LoadGraph(file_name);
+        get_handle = LoadGraph(file_name);
 
-        if (-1 != handle) {
-            handle_list.emplace(file_name, handle);
-            //handle_list[file_name] = handle;
+        if (-1 != get_handle) {
+            handle_list.emplace(file_name, get_handle);
+            //handle_list[file_name] = get_handle;
 
             return true;
         }
@@ -137,7 +162,7 @@ bool polygon_dx::load_image(const TCHAR* file_name) {
 #endif
     }
 
-    handle = handle_list[file_name];
+    get_handle = handle_list[file_name];
 
     return true;
 }
@@ -174,7 +199,11 @@ void polygon_dx::render() {
 
 #if defined(_USE_RASTERIZE)
 #if defined(_USE_LIGHTING)
+#if defined(_USE_NORMAL_MAP)
+    rasterize::Draw(transform_vertices, image_list[handle], image_list[handle_normal_map], camera_ptr);
+#else
     rasterize::Draw(transform_vertices, image_list[handle], camera_ptr);
+#endif
 #else
     rasterize::Draw(transform_vertices, image_list[handle]);
 #endif
@@ -233,10 +262,27 @@ bool polygon_dx::transform(const math::matrix44& matrix, const bool transform) {
         }
 
         // 法線はワールドマトリクスの回転成分のみを適応
-        auto world_normal = (*src_normal) * world_matrix->get_rotate();
+        auto world_rotate = world_matrix->get_rotate();
+        auto world_normal = (*src_normal) * world_rotate;
 
         dst->set_world_position(world_pos);
         dst->set_normal(world_normal);
+
+#if defined(_USE_NORMAL_MAP)
+        auto src_tangent = src->get_tangent();
+        auto src_binormal = src->get_binormal();
+
+        if (src_tangent == nullptr || src_binormal == nullptr) {
+            return false;
+        }
+
+        auto world_tangent = (*src_tangent) * world_rotate;
+        auto world_binormal = (*src_binormal) * world_rotate;
+
+        dst->set_tangent(world_tangent);
+        dst->set_binormal(world_binormal);
+#endif
+
         dst->set_diffuse(*src->get_diffuse());
         dst->set_speculer(*src->get_speculer(), src->get_speculer_power());
 #endif

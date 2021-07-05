@@ -15,6 +15,10 @@ namespace r3d {
 #if defined(_USE_LIGHTING)
         world_position = nullptr;
         normal = nullptr;
+#if defined(_USE_NORMAL_MAP)
+        tangent = nullptr;
+        binormal = nullptr;
+#endif
         diffuse = nullptr;
         speculer = nullptr;
         speculer_power = 1.0;
@@ -26,6 +30,10 @@ namespace r3d {
 #if defined(_USE_LIGHTING)
         world_position.reset(new math::vector4);
         normal.reset(new math::vector4);
+#if defined(_USE_NORMAL_MAP)
+        tangent.reset(new math::vector4);
+        binormal.reset(new math::vector4);
+#endif
         diffuse.reset(new image::color);
         speculer.reset(new image::color);
 #endif
@@ -63,6 +71,28 @@ namespace r3d {
 
         return true;
     }
+
+#if defined(_USE_NORMAL_MAP)
+    bool vertex::set_tangent(const math::vector4& vector) {
+        if (tangent == nullptr) {
+            return false;
+        }
+
+        tangent->set(vector);
+
+        return true;
+    }
+
+    bool vertex::set_binormal(const math::vector4& vector) {
+        if (binormal == nullptr) {
+            return false;
+        }
+
+        binormal->set(vector);
+
+        return true;
+    }
+#endif
 
     bool vertex::set_diffuse(const image::color& color) {
         if (diffuse == nullptr) {

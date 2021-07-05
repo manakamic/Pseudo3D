@@ -54,6 +54,10 @@ namespace r3d {
             // TODO : ’¸“_‚Æ–@ü‚Ìˆ—
             dst->set_world_position(*src_pos);
             dst->set_normal(*src->get_normal());
+#if defined(_USE_NORMAL_MAP)
+            dst->set_tangent(*src->get_tangent());
+            dst->set_binormal(*src->get_binormal());
+#endif
             dst->set_diffuse(*src->get_diffuse());
             dst->set_speculer(*src->get_speculer(), src->get_speculer_power());
 #endif

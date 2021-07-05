@@ -44,6 +44,12 @@ namespace r3d {
 
         bool set_normal(const math::vector4& vector);
         const std::shared_ptr<math::vector4> get_normal() const { return normal; }
+#if defined(_USE_NORMAL_MAP)
+        bool set_tangent(const math::vector4& vector);
+        const std::shared_ptr<math::vector4> get_tangent() const { return tangent; }
+        bool set_binormal(const math::vector4& vector);
+        const std::shared_ptr<math::vector4> get_binormal() const { return binormal; }
+#endif
 
         bool set_diffuse(const image::color& color);
         const std::shared_ptr<image::color> get_diffuse() const { return diffuse; }
@@ -61,6 +67,10 @@ namespace r3d {
 #if defined(_USE_LIGHTING)
         std::shared_ptr<math::vector4> world_position;
         std::shared_ptr<math::vector4> normal;
+#if defined(_USE_NORMAL_MAP)
+        std::shared_ptr<math::vector4> tangent;
+        std::shared_ptr<math::vector4> binormal;
+#endif
         std::shared_ptr<image::color> diffuse;
         std::shared_ptr<image::color> speculer;
         double speculer_power;

@@ -16,7 +16,7 @@
 namespace {
     constexpr auto BUFFER_00_PNG = _T("buffer00.png");
     constexpr auto BUFFER_01_PNG = _T("buffer01.png");
-    constexpr auto ALPHA_BASE = 255.0;
+    constexpr auto RGBA_BASE = 255.0;
 
     // rasterize::Draw が static メソッドなので 使用する変数類は static にする
     // png 処理用の変数は全て 2 つ用意して ダブルバッファを模して処理する
@@ -147,7 +147,11 @@ namespace {
 #if !defined(_USE_LIGHTING)
     std::tuple<double, double, double>
 #else
+#if defined(_USE_NORMAL_MAP)
+    std::tuple<double, double, double, math::vector4, math::vector4, math::vector4, math::vector4, image::color, image::color, double>
+#else
     std::tuple<double, double, double, math::vector4, math::vector4, image::color, image::color, double>
+#endif
 #endif
         get_perspective_uvz(const std::shared_ptr<r3d::vertex>& v0,
                             const std::shared_ptr<r3d::vertex>& v1,
@@ -195,6 +199,18 @@ namespace {
 
         normal.normalized();
 
+#if defined(_USE_NORMAL_MAP)
+        auto t0 = v0->get_tangent(); auto t1 = v1->get_tangent(); auto t2 = v2->get_tangent();
+        auto tangent = (*t0 * rate_0) + (*t1 * rate_1) + (*t2 * rate_2);
+
+        tangent.normalized();
+
+        auto b0 = v0->get_binormal(); auto b1 = v1->get_binormal(); auto b2 = v2->get_binormal();
+        auto binormal = (*b0 * rate_0) + (*b1 * rate_1) + (*b2 * rate_2);
+
+        binormal.normalized();
+#endif
+
         auto d0 = v0->get_diffuse(); auto d1 = v1->get_diffuse(); auto d2 = v2->get_diffuse();
         auto diffuse = (*d0 * rate_0) + (*d1 * rate_1) + (*d2 * rate_2);
 
@@ -204,7 +220,11 @@ namespace {
         auto pow0 = v0->get_speculer_power(); auto pow1 = v1->get_speculer_power(); auto pow2 = v2->get_speculer_power();
         auto speculer_power = (pow0 * rate_0) + (pow1 * rate_1) + (pow2 * rate_2);
 
+#if defined(_USE_NORMAL_MAP)
+        return std::make_tuple(u, v, z, position, normal, tangent, binormal, diffuse, speculer, speculer_power);
+#else
         return std::make_tuple(u, v, z, position, normal, diffuse, speculer, speculer_power);
+#endif
 #endif
     }
 
@@ -221,17 +241,39 @@ namespace {
     }
 
 #if defined(_USE_LIGHTING)
+#if defined(_USE_NORMAL_MAP)
     png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
                              const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
-                             const png::rgba_pixel& src, std::shared_ptr<image::color> diffuse, std::shared_ptr<image::color> speculer, double speculer_power) {
+                             const std::shared_ptr<math::vector4> tangent, const std::shared_ptr<math::vector4> binormal,
+                             const png::rgba_pixel& src, const png::rgba_pixel& src_normal, const std::shared_ptr<image::color> diffuse,
+                             const std::shared_ptr<image::color> speculer, const double speculer_power) {
+        // ノーマルマップは接空間での法線情報
+        auto src_normal_x = static_cast<double>(src_normal.red)   / RGBA_BASE * 2.0 - 1.0;
+        auto src_normal_y = static_cast<double>(src_normal.green) / RGBA_BASE * 2.0 - 1.0;
+        auto src_normal_z = static_cast<double>(src_normal.blue)  / RGBA_BASE * 2.0 - 1.0;
+        auto normal_map_normal = math::vector4(src_normal_x, src_normal_y, src_normal_z);
+#else
+    png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
+                             const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
+                             const png::rgba_pixel& src, const std::shared_ptr<image::color> diffuse,
+                             const std::shared_ptr<image::color> speculer, const double speculer_power) {
+#endif
         auto src_r = static_cast<double>(src.red);
         auto src_g = static_cast<double>(src.green);
         auto src_b = static_cast<double>(src.blue);
         // ライトベクトル(予め反転済)
-        auto light = light_ptr->get_direction()->normalize();
-        auto normal_dir = normal->normalize();
+        auto light = light_ptr->get_direction();
+#if defined(_USE_NORMAL_MAP)
+        // ライトを接空間へ変換
+        auto tangent_light_x = light->dot(*tangent);
+        auto tangent_light_y = light->dot(*binormal);
+        auto tangent_light_z = light->dot(*normal);
+        auto tangent_light = math::vector4(tangent_light_x, tangent_light_y, tangent_light_z);
+        auto diffuse_dot = tangent_light.dot(normal_map_normal);
+#else
         // ライトと法線の内積
-        auto diffuse_dot = light.dot(normal_dir);
+        auto diffuse_dot = light->dot(*normal);
+#endif
 
         if (diffuse_dot < 0.0) {
             diffuse_dot = 0.0;
@@ -241,30 +283,45 @@ namespace {
         }
 
         // 擬似拡散反射
-        auto diffuse_r = static_cast<double>(diffuse->get_r()) / 255.0;
-        auto diffuse_g = static_cast<double>(diffuse->get_g()) / 255.0;
-        auto diffuse_b = static_cast<double>(diffuse->get_b()) / 255.0;
+        auto diffuse_r = static_cast<double>(diffuse->get_r()) / RGBA_BASE;
+        auto diffuse_g = static_cast<double>(diffuse->get_g()) / RGBA_BASE;
+        auto diffuse_b = static_cast<double>(diffuse->get_b()) / RGBA_BASE;
         auto dr = diffuse_r * diffuse_dot;
         auto dg = diffuse_g * diffuse_dot;
         auto db = diffuse_b * diffuse_dot;
 
+        src_r *= dr;
+        src_g *= dg;
+        src_b *= db;
+
         // 擬似鏡面反射(ハーフベクトル)
-        auto speculer_r = static_cast<double>(speculer->get_r()) / 255.0;
-        auto speculer_g = static_cast<double>(speculer->get_g()) / 255.0;
-        auto speculer_b = static_cast<double>(speculer->get_b()) / 255.0;
-#if false
+        auto speculer_r = static_cast<double>(speculer->get_r()) / RGBA_BASE;
+        auto speculer_g = static_cast<double>(speculer->get_g()) / RGBA_BASE;
+        auto speculer_b = static_cast<double>(speculer->get_b()) / RGBA_BASE;
+#if true
         // 視線ベクトル
         auto camera_position = camera->get_position();
-        auto eye = math::vector4(camera_position->get_x() - position->get_x(), camera_position->get_y() - position->get_y(), camera_position->get_z() - position->get_z());
+        auto eye = math::vector4(camera_position->get_x() - position->get_x(),
+                                 camera_position->get_y() - position->get_y(),
+                                 camera_position->get_z() - position->get_z());
 
         eye.normalized();
 
+#if defined(_USE_NORMAL_MAP)
+        // 視線を接空間へ変換
+        auto tangent_eye_x = eye.dot(*tangent);
+        auto tangent_eye_y = eye.dot(*binormal);
+        auto tangent_eye_z = eye.dot(*normal);
         // 視線とライトのハーフベクトル
-        auto half = math::vector4(eye.get_x() + light.get_x(), eye.get_y() + light.get_y(), eye.get_z() + light.get_z());
+        auto half = math::vector4(tangent_eye_x + tangent_light_x, tangent_eye_y + tangent_light_y, tangent_eye_z + tangent_light_z) * 0.5;
 
-        half.normalized();
+        auto speculer_dot = half.dot(normal_map_normal);
+#else
+        // 視線とライトのハーフベクトル
+        auto half = math::vector4(eye.get_x() + light->get_x(), eye.get_y() + light->get_y(), eye.get_z() + light->get_z()) * 0.5;
 
-        auto speculer_dot = half.dot(normal_dir);
+        auto speculer_dot = half.dot(*normal);
+#endif
 
         if (speculer_dot < 0.0) {
             speculer_dot = 0.0;
@@ -273,36 +330,30 @@ namespace {
         }
 
         auto speculer_pow = std::pow(speculer_dot, speculer_power);
-#else
-        auto speculer_pow = 0.0;
-#endif
 
         if (dr > 0) {
-            dr += speculer_r * speculer_pow;
+            src_r += speculer_r * speculer_pow;
         }
 
         if (dg > 0) {
-            dg += speculer_g * speculer_pow;
+            src_g += speculer_g * speculer_pow;
         }
 
         if (db > 0) {
-            db += speculer_b * speculer_pow;
+            src_b += speculer_b * speculer_pow;
+        }
+#endif
+
+        if (src_r > RGBA_BASE) {
+            src_r = RGBA_BASE;
         }
 
-        src_r *= dr;
-        src_g *= dg;
-        src_b *= db;
-
-        if (src_r > 255.0) {
-            src_r = 255.0;
+        if (src_g > RGBA_BASE) {
+            src_g = RGBA_BASE;
         }
 
-        if (src_g > 255.0) {
-            src_g = 255.0;
-        }
-
-        if (src_b > 255.0) {
-            src_b = 255.0;
+        if (src_b > RGBA_BASE) {
+            src_b = RGBA_BASE;
         }
 
         auto r = static_cast<png::byte>(std::round(src_r));
@@ -316,7 +367,7 @@ namespace {
     // アルファブレンドでピクセルを書き込む
     bool alpha_blend(const int x, const int y, const png::rgba_pixel& src, png::image<png::rgb_pixel>& buffer) {
         if (src.alpha > 0x00) {
-            auto src_a = static_cast<double>(src.alpha) / ALPHA_BASE;
+            auto src_a = static_cast<double>(src.alpha) / RGBA_BASE;
             auto src_r = static_cast<png::byte>(src_a * static_cast<double>(src.red));
             auto src_g = static_cast<png::byte>(src_a * static_cast<double>(src.green));
             auto src_b = static_cast<png::byte>(src_a * static_cast<double>(src.blue));
@@ -371,7 +422,13 @@ namespace {
 }
 
 #if defined(_USE_LIGHTING)
-void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image, const std::shared_ptr<r3d::camera>& camera) {
+#if defined(_USE_NORMAL_MAP)
+void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image,
+                     const png::image <png::rgba_pixel>& image_normal, const std::shared_ptr<r3d::camera>& camera) {
+#else
+void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>& vertices, const png::image <png::rgba_pixel>& image,
+                     const std::shared_ptr<r3d::camera>& camera) {
+#endif
 #else
 void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices, const png::image <png::rgba_pixel>&image) {
 #endif
@@ -419,6 +476,10 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
 #if defined(_USE_LIGHTING)
             std::shared_ptr<math::vector4> position = nullptr;
             std::shared_ptr<math::vector4> normal = nullptr;
+#if defined(_USE_NORMAL_MAP)
+            std::shared_ptr<math::vector4> tangent = nullptr;
+            std::shared_ptr<math::vector4> binormal = nullptr;
+#endif
             std::shared_ptr<image::color> diffuse = nullptr;
             std::shared_ptr<image::color> speculer = nullptr;
             auto speculer_power = 1.0;
@@ -434,9 +495,17 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
 #if defined(_USE_LIGHTING)
                 position.reset(new math::vector4(std::get<3>(uvz)));
                 normal.reset(new math::vector4(std::get<4>(uvz)));
+#if defined(_USE_NORMAL_MAP)
+                tangent.reset(new math::vector4(std::get<5>(uvz)));
+                binormal.reset(new math::vector4(std::get<6>(uvz)));
+                diffuse.reset(new image::color(std::get<7>(uvz)));
+                speculer.reset(new image::color(std::get<8>(uvz)));
+                speculer_power = std::get<9>(uvz);
+#else
                 diffuse.reset(new image::color(std::get<5>(uvz)));
                 speculer.reset(new image::color(std::get<6>(uvz)));
                 speculer_power = std::get<7>(uvz);
+#endif
 #endif
             }
             else if (math::utility::inside_triangle_point(v1, v3, v2, p)) {
@@ -448,17 +517,32 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
 #if defined(_USE_LIGHTING)
                 position.reset(new math::vector4(std::get<3>(uvz)));
                 normal.reset(new math::vector4(std::get<4>(uvz)));
+#if defined(_USE_NORMAL_MAP)
+                tangent.reset(new math::vector4(std::get<5>(uvz)));
+                binormal.reset(new math::vector4(std::get<6>(uvz)));
+                diffuse.reset(new image::color(std::get<7>(uvz)));
+                speculer.reset(new image::color(std::get<8>(uvz)));
+                speculer_power = std::get<9>(uvz);
+#else
                 diffuse.reset(new image::color(std::get<5>(uvz)));
                 speculer.reset(new image::color(std::get<6>(uvz)));
                 speculer_power = std::get<7>(uvz);
+#endif
 #endif
             }
 
             if (in && depth[depth_pos] > z) { // Z バッファ処理
 #if defined(_USE_LIGHTING)
                 auto src = get_rgba_with_uv(u, v, image);
+#if defined(_USE_NORMAL_MAP)
+                auto src_normal = get_rgba_with_uv(u, v, image_normal);
+                // ライティング処理
+                auto pixel = lighting(camera, light_ptr, position, normal, tangent, binormal,
+                                      src, src_normal, diffuse, speculer, speculer_power);
+#else
                 // ライティング処理
                 auto pixel = lighting(camera, light_ptr, position, normal, src, diffuse, speculer, speculer_power);
+#endif
 #else
                 auto pixel = get_rgba_with_uv(u, v, image);
 #endif
