@@ -97,7 +97,7 @@ bool polygon_dx::initialize(const TCHAR* file_name, double size, math::vector4& 
     auto normal = math::vector4(0.0, 0.0, -1.0);
 #if defined(_USE_NORMAL_MAP)
     auto tangent = math::vector4(1.0, 0.0, 0.0);
-    auto binormal = math::vector4(1.0, 1.0, 0.0);
+    auto binormal = math::vector4(0.0, 1.0, 0.0);
 #endif
     auto diffuse = image::color();
     auto speculer = image::color();
