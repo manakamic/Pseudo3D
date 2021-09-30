@@ -34,7 +34,7 @@ namespace math {
 
         zero(row_column);
 
-        row_column[0][0] = cot / aspect;
+        row_column[0][0] = cot * aspect;
         row_column[1][1] = cot;
         row_column[2][2] = temp;
         row_column[2][3] = 1.0f;

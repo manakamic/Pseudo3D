@@ -22,7 +22,7 @@ namespace {
 
 bool initialize_pseudo3d(const std::shared_ptr<pseudo3d>& sp_pseudo3d) {
     // Šp“x‚©‚çƒ‰ƒWƒAƒ“‚Ö‚Ì•ÏŠ·
-    auto fov = math::utility::degree_to_radian(45.0);
+    auto fov = math::utility::degree_to_radian(60.0);
     auto near_z = 1.0;
     auto far_z = 500.0;
 
