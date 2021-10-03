@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "constants.h"
 #include "utility.h"
 #include "vector4.h"
@@ -56,34 +57,26 @@ bool initialize_pseudo3d(const std::shared_ptr<pseudo3d>& sp_pseudo3d) {
             // 終点から移動量を戻せば始点となる
             auto start = (*end) + math::vector4(-move->get_x(), -move->get_y(), -move->get_z());
 
-            // enemy だけ処理する
-            for (auto&& enemy_type : polygon_list) {
-                if (enemy_type->get_type_kind() == polygon_dx::type_kind::shot) {
-                    continue;
+            // enemy だけ処理する + polygon_list を逆から処理する
+            std::for_each(polygon_list.rbegin(), polygon_list.rend(), [&p_shot, &end, &start](auto&& enemy_type) {
+                if (enemy_type->get_type_kind() != polygon_dx::type_kind::shot) {
+                    auto p_enemy = dynamic_cast<enemy*>(enemy_type.get());
+
+                    if (p_enemy != nullptr && !p_enemy->get_hit()) {
+                        auto p0 = enemy_type->get_world_position(0);
+                        auto p1 = enemy_type->get_world_position(1);
+                        auto p2 = enemy_type->get_world_position(2);
+                        auto p3 = enemy_type->get_world_position(3);
+                        auto result = math::utility::collision_polygon_line(*p0, *p1, *p2, *p3, start, *end);
+                        auto hit = std::get<0>(result);
+
+                        if (hit) {
+                            p_enemy->set_hit(true);
+                            p_shot->set_end(true);
+                        }
+                    }
                 }
-
-                auto p_enemy = dynamic_cast<enemy*>(enemy_type.get());
-
-                if (p_enemy == nullptr) {
-                    continue;
-                }
-
-                if (p_enemy->get_hit()) {
-                    continue;
-                }
-
-                auto p0 = enemy_type->get_world_position(0);
-                auto p1 = enemy_type->get_world_position(1);
-                auto p2 = enemy_type->get_world_position(2);
-                auto p3 = enemy_type->get_world_position(3);
-                auto result = math::utility::collision_polygon_line(*p0, *p1, *p2, *p3, start, *end);
-                bool hit = std::get<0>(result);
-
-                if (hit) {
-                    p_enemy->set_hit(true);
-                    p_shot->set_end(true);
-                }
-            }
+            });
         }
     };
 
