@@ -39,6 +39,8 @@ namespace r3d {
 
         auto axis_y = axis_z.cross(axis_x);
 
+        axis_y.normalized();
+
         math::matrix_array row_column{ {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}} };
 
         row_column[0][0] = axis_x.get_x();
