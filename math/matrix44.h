@@ -30,7 +30,7 @@ namespace math {
         const matrix44 operator +(const vector4 rhs) const;
 
         const double get_value(const uint32_t row, const uint32_t column) const { return row_column[row][column]; }
-        const double set_value(const uint32_t row, const uint32_t column, const double value) { row_column[row][column] = value; }
+        const void set_value(const uint32_t row, const uint32_t column, const double value) { row_column[row][column] = value; }
 
         void zero(matrix_array& target) const;
         void unit();
