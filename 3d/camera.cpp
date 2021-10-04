@@ -28,18 +28,13 @@ namespace r3d {
     }
 
     void camera::look_at() {
-        auto pos = *position;
-        auto axis_z = (*target) - pos;
-
-        axis_z.normalized();
-
+        auto axis_z = (*target) - (*position);
         auto axis_x = up->cross(axis_z);
-
-        axis_x.normalized();
-
         auto axis_y = axis_z.cross(axis_x);
 
+        axis_x.normalized();
         axis_y.normalized();
+        axis_z.normalized();
 
         math::matrix_array row_column{ {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}} };
 
@@ -58,9 +53,9 @@ namespace r3d {
         row_column[2][2] = axis_z.get_z();
         row_column[2][3] = 0.0;
 
-        row_column[3][0] = -axis_x.dot(pos);
-        row_column[3][1] = -axis_y.dot(pos);
-        row_column[3][2] = -axis_z.dot(pos);
+        row_column[3][0] = -axis_x.dot(*position);
+        row_column[3][1] = -axis_y.dot(*position);
+        row_column[3][2] = -axis_z.dot(*position);
         row_column[3][3] = 1.0;
 
         matrix.reset(new math::matrix44(row_column));
