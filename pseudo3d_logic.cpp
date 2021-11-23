@@ -55,11 +55,11 @@ bool initialize_pseudo3d(const std::shared_ptr<pseudo3d>& sp_pseudo3d) {
             auto end = shot_type->get_world_position();
             auto move = p_shot->get_move();
             // 終点から移動量を戻せば始点となる
-            auto start = (*end) + math::vector4(-move->get_x(), -move->get_y(), -move->get_z());
+            auto start = (*end) - (*move);
 
             // enemy だけ処理する + polygon_list を逆から処理する
             std::for_each(polygon_list.rbegin(), polygon_list.rend(), [&p_shot, &end, &start](auto&& enemy_type) {
-                if (enemy_type->get_type_kind() != polygon_dx::type_kind::shot) {
+                if (!p_shot->get_end() && enemy_type->get_type_kind() == polygon_dx::type_kind::enemy) {
                     auto p_enemy = dynamic_cast<enemy*>(enemy_type.get());
 
                     if (p_enemy != nullptr && !p_enemy->get_hit()) {
