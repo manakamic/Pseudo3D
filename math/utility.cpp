@@ -112,9 +112,9 @@ namespace math {
 
         if (ret) {
             // •½–Ê‚Æü•ª‚ÌŒğ“_
-            const auto line_direction = (line_end - line_start).normalize();
-            const auto ratio = std::abs(dot_p_s) / std::abs(dot_p_s) + std::abs(dot_p_e);
-            const auto point = line_start + (line_direction * ratio);
+            const auto line = line_end - line_start;
+            const auto ratio = std::abs(dot_p_s) / (std::abs(dot_p_s) + std::abs(dot_p_e));
+            const auto point = line_start + (line * ratio);
 
             std::get<1>(result) = point;
             std::get<0>(result) = true;
