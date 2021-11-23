@@ -37,14 +37,14 @@ namespace math {
         // 平面との交点
         const vector4 point = std::get<1>(result);
 
-#if defined(_DEBUG_3D)
-        collision_point.reset(new vector4(point));
-#endif
-
         // 矩形を三角形に分けて判定
         if (inside_triangle_point(polygon_point0, polygon_point1, polygon_point2, point)) {
             std::get<0>(result) = true;
             std::get<1>(result) = point;
+
+#if defined(_DEBUG_3D)
+            collision_point.reset(new vector4(point));
+#endif
 
             return result;
         }
@@ -52,6 +52,10 @@ namespace math {
         if (inside_triangle_point(polygon_point1, polygon_point3, polygon_point2, point)) {
             std::get<0>(result) = true;
             std::get<1>(result) = point;
+
+#if defined(_DEBUG_3D)
+            collision_point.reset(new vector4(point));
+#endif
 
             return result;
         }
@@ -79,15 +83,9 @@ namespace math {
         const auto v0p = point - triangle_point0;
         const auto v1p = point - triangle_point1;
         const auto v2p = point - triangle_point2;
-
-        auto c0 = v01.cross(v1p);
-        auto c1 = v12.cross(v2p);
-        auto c2 = v21.cross(v0p);
-
-        c0.normalized();
-        c1.normalized();
-        c2.normalized();
-
+        const auto c0 = v01.cross(v1p);
+        const auto c1 = v12.cross(v2p);
+        const auto c2 = v21.cross(v0p);
         const auto dot01 = c0.dot(c1);
         const auto dot02 = c0.dot(c2);
 
@@ -98,12 +96,8 @@ namespace math {
     bool utility::collision_plane_line(const plane& p, const vector4& line_start, const vector4& line_end, collision& result) {
         const vector4 plane_point  = std::get<0>(p);
         const vector4 plane_normal = std::get<1>(p);
-        auto point_to_start = line_start - plane_point;
-        auto point_to_end   = line_end   - plane_point;
-
-        point_to_start.normalized();
-        point_to_end.normalized();
-
+        const auto point_to_start = line_start - plane_point;
+        const auto point_to_end   = line_end   - plane_point;
         const auto dot_p_s = plane_normal.dot(point_to_start);
         const auto dot_p_e = plane_normal.dot(point_to_end);
         const auto pattern_a = (dot_p_s >= 0.0) && (dot_p_e <= 0.0);
