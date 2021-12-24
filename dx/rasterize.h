@@ -38,4 +38,7 @@ public:
     bool initialize(int width, int height);
     void clear();
     void render();
+
+protected:
+    int double_buffering();
 };

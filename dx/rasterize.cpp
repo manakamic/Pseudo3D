@@ -1,4 +1,5 @@
-#include <fstream>
+#include <sstream>
+#include <iostream>
 #include <cmath>
 #include <tuple>
 #include <algorithm>
@@ -14,8 +15,6 @@
 #endif
 
 namespace {
-    constexpr auto BUFFER_00_PNG = _T("buffer00.png");
-    constexpr auto BUFFER_01_PNG = _T("buffer01.png");
     constexpr auto RGBA_BASE = 255.0;
 
     // rasterize::Draw が static メソッドなので 使用する変数類は static にする
@@ -25,6 +24,9 @@ namespace {
 
     std::thread db_thread00;
     std::thread db_thread01;
+
+    std::ostringstream stream00;
+    std::ostringstream stream01;
 
     int handle00 = -1;
     int handle01 = -1;
@@ -419,32 +421,26 @@ namespace {
         return false;
     }
 
-    // スレッド(C++11 と DX ライブラリ)の同期
-    void synchronized_thread(std::thread& th, int& handle) {
-        if (th.joinable()) {
-            th.join();
-
-            while (CheckHandleASyncLoad(handle) != FALSE) {
-                ProcessMessage(); // ProcessMessage で非同期ロードが進む
-
-                // 無限ループなのでメインループと同じ脱出処理を記述
-                if (1 == CheckHitKey(KEY_INPUT_ESCAPE)) {
-                    handle = -1;
-                    break;
-                }
-            }
-
-            SetUseASyncLoadFlag(FALSE); // 非同期ロードを無効にする
-        }
-    }
-
     // スレッドで行う処理
-    void process_thread(const TCHAR* png_name, png::image<png::rgb_pixel>& buffer, int& handle) {
-        buffer.write(png_name);       // ファイル書き出し
-        clear_buffer(buffer);         // ファイル書き込みが終わったらクリアしておく
-        SetUseASyncLoadFlag(TRUE);    // 非同期ロードを有効にする
-        delete_handle(handle);        // 前回のロード画像を破棄(ロードを繰り返すのできちんと破棄する)
-        handle = LoadGraph(png_name); // 非同期ロード
+    void process_thread(std::ostringstream& stream, png::image<png::rgb_pixel>& buffer, int& handle) {
+        buffer.write_stream(stream); // ストリーム書き出し
+        clear_buffer(buffer);        // ストリーム書き込みが終わったらクリアしておく
+
+        auto str = stream.str();
+
+        if (handle == -1) {
+            handle = CreateGraphFromMem(str.c_str(), str.size());
+        }
+        else {
+            auto ret = ReCreateGraphFromMem(str.c_str(), str.size(), handle);
+
+            if (ret == -1) {
+                handle = -1;
+            }
+        }
+
+        stream.str(_T(""));
+        stream.clear(std::stringstream::goodbit);
     }
 }
 
@@ -601,9 +597,6 @@ bool rasterize::initialize(int width, int height) {
         return false;
     }
 
-    std::remove(BUFFER_00_PNG);
-    std::remove(BUFFER_01_PNG);
-
 #if defined(_USE_LIGHTING)
     if (!create_light()) {
         return false;
@@ -617,32 +610,47 @@ void rasterize::clear() {
     clear_depth();
 }
 
-void rasterize::render() {
-    if (double_buffer_flag) {
-        // 前フレームで作成したスレッドの同期
-        synchronized_thread(db_thread00, handle00);
+int rasterize::double_buffering() {
+    auto handle = 0;
 
+    if (double_buffer_flag) {
         // スレッドで処理された png をロード
         std::thread th01([]() {
-            process_thread(BUFFER_01_PNG, buffer01, handle01);
+            process_thread(stream01, buffer01, handle01);
         });
 
+        // スレッド処理を変数に保存
         db_thread01 = std::move(th01);
-    }
-    else {
-        synchronized_thread(db_thread01, handle01);
 
+        // 前フレームで作成したスレッドの同期
+        if (db_thread00.joinable()) {
+            db_thread00.join();
+        }
+
+        // 同期処理が終わったハンドルを使用する
+        handle = handle00;
+        // バッファ切り替え
+        double_buffer_flag = false;
+    } else {
         std::thread th00([]() {
-            process_thread(BUFFER_00_PNG, buffer00, handle00);
+            process_thread(stream00, buffer00, handle00);
         });
 
         db_thread00 = std::move(th00);
+
+        if (db_thread01.joinable()) {
+            db_thread01.join();
+        }
+
+        handle = handle01;
+        double_buffer_flag = true;
     }
 
-    // 読込が終わっている方を使用する
-    auto handle = double_buffer_flag ? handle00 : handle01;
+    return handle;
+}
 
-    double_buffer_flag = !double_buffer_flag;
+void rasterize::render() {
+    auto handle = double_buffering();
 
     if (handle == -1) {
         return;
