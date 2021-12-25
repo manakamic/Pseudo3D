@@ -25,9 +25,6 @@ namespace {
     std::thread db_thread00;
     std::thread db_thread01;
 
-    std::ostringstream stream00;
-    std::ostringstream stream01;
-
     int handle00 = -1;
     int handle01 = -1;
 
@@ -108,7 +105,7 @@ namespace {
 
         for (auto y = 0U; y < height; ++y) {
             for (auto x = 0U; x < width; ++x) {
-                buffer[y][x] = png::rgb_pixel(0x00, 0x00, 0x00);
+                buffer.set_pixel(x, y, png::rgb_pixel(0x00, 0x00, 0x00));
             }
         }
     }
@@ -126,8 +123,8 @@ namespace {
     }
 
     // 最小と最大の組み合わせを返す
-    std::tuple<int, int, int, int> get_min_max(const std::shared_ptr<math::vector4>& v0, const std::shared_ptr<math::vector4>& v1,
-                                               const std::shared_ptr<math::vector4>& v2, const std::shared_ptr<math::vector4>& v3) {
+    const std::tuple<int, int, int, int> get_min_max(const std::shared_ptr<math::vector4>& v0, const std::shared_ptr<math::vector4>& v1,
+                                                     const std::shared_ptr<math::vector4>& v2, const std::shared_ptr<math::vector4>& v3) {
         auto x = { v0->get_x(),  v1->get_x(),  v2->get_x(),  v3->get_x() };
         auto y = { v0->get_y(),  v1->get_y(),  v2->get_y(),  v3->get_y() };
 
@@ -147,12 +144,12 @@ namespace {
     // z 値も同様の補間が必要なので一緒に計算をする
     // さらに uv 値はパースペクティブ テクスチャ マッピング処理になる様に計算
 #if !defined(_USE_LIGHTING)
-    std::tuple<double, double, double>
+    const std::tuple<double, double, double>
 #else
 #if defined(_USE_NORMAL_MAP)
-    std::tuple<double, double, double, math::vector4, math::vector4, math::vector4, math::vector4, image::color, image::color, double>
+    const std::tuple<double, double, double, math::vector4, math::vector4, math::vector4, math::vector4, image::color, image::color, double>
 #else
-    std::tuple<double, double, double, math::vector4, math::vector4, image::color, image::color, double>
+    const std::tuple<double, double, double, math::vector4, math::vector4, image::color, image::color, double>
 #endif
 #endif
         get_perspective_uvz(const std::shared_ptr<r3d::vertex>& v0,
@@ -231,7 +228,7 @@ namespace {
     }
 
     // uv 値から指定画像のピクセル値を取得
-    png::rgba_pixel get_rgba_with_uv(const double u, const double v, const png::image <png::rgba_pixel>& image) {
+    const png::rgba_pixel get_rgba_with_uv(const double u, const double v, const png::image <png::rgba_pixel>& image) {
         auto rate_u = u / 1.0;
         auto rate_v = v / 1.0;
         auto width = static_cast<double>(image.get_width());
@@ -239,16 +236,16 @@ namespace {
         auto x = static_cast<int>(width * rate_u);
         auto y = static_cast<int>(height * rate_v);
 
-        return image[y][x];
+        return image.get_pixel(x, y);
     }
 
 #if defined(_USE_LIGHTING)
 #if defined(_USE_NORMAL_MAP)
-    png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
-                             const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
-                             const std::shared_ptr<math::vector4> tangent, const std::shared_ptr<math::vector4> binormal,
-                             const png::rgba_pixel& src, const png::rgba_pixel& src_normal, const std::shared_ptr<image::color> diffuse,
-                             const std::shared_ptr<image::color> speculer, const double speculer_power) {
+    const png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
+                                   const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
+                                   const std::shared_ptr<math::vector4> tangent, const std::shared_ptr<math::vector4> binormal,
+                                   const png::rgba_pixel& src, const png::rgba_pixel& src_normal, const std::shared_ptr<image::color> diffuse,
+                                   const std::shared_ptr<image::color> speculer, const double speculer_power) {
         // ノーマルマップは接空間での法線情報
         auto src_normal_x = static_cast<double>(src_normal.red)   / RGBA_BASE * 2.0 - 1.0;
         auto src_normal_y = static_cast<double>(src_normal.green) / RGBA_BASE * 2.0 - 1.0;
@@ -257,10 +254,10 @@ namespace {
 
         normal_map_normal.normalized();
 #else
-    png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
-                             const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
-                             const png::rgba_pixel& src, const std::shared_ptr<image::color> diffuse,
-                             const std::shared_ptr<image::color> speculer, const double speculer_power) {
+    const png::rgba_pixel lighting(const std::shared_ptr<r3d::camera>& camera, const std::unique_ptr<r3d::light>& light_ptr,
+                                   const std::shared_ptr<math::vector4> position, const std::shared_ptr<math::vector4> normal,
+                                   const png::rgba_pixel& src, const std::shared_ptr<image::color> diffuse,
+                                   const std::shared_ptr<image::color> speculer, const double speculer_power) {
 #endif
         auto src_r = static_cast<double>(src.red);
         auto src_g = static_cast<double>(src.green);
@@ -413,7 +410,7 @@ namespace {
             auto b = src_b + dst_b;
 
             // ポイントサンプリング
-            buffer[y][x] = png::rgb_pixel(r, g, b);
+            buffer.set_pixel(x, y, png::rgb_pixel(r, g, b));
 
             return true;
         }
@@ -422,7 +419,9 @@ namespace {
     }
 
     // スレッドで行う処理
-    void process_thread(std::ostringstream& stream, png::image<png::rgb_pixel>& buffer, int& handle) {
+    void process_thread(png::image<png::rgb_pixel>& buffer, int& handle) {
+        std::ostringstream stream;
+
         buffer.write_stream(stream); // ストリーム書き出し
         clear_buffer(buffer);        // ストリーム書き込みが終わったらクリアしておく
 
@@ -432,15 +431,8 @@ namespace {
             handle = CreateGraphFromMem(str.c_str(), str.size());
         }
         else {
-            auto ret = ReCreateGraphFromMem(str.c_str(), str.size(), handle);
-
-            if (ret == -1) {
-                handle = -1;
-            }
+            ReCreateGraphFromMem(str.c_str(), str.size(), handle);
         }
-
-        stream.str(_T(""));
-        stream.clear(std::stringstream::goodbit);
     }
 }
 
@@ -616,7 +608,7 @@ int rasterize::double_buffering() {
     if (double_buffer_flag) {
         // スレッドで処理された png をロード
         std::thread th01([]() {
-            process_thread(stream01, buffer01, handle01);
+            process_thread(buffer01, handle01);
         });
 
         // スレッド処理を変数に保存
@@ -633,7 +625,7 @@ int rasterize::double_buffering() {
         double_buffer_flag = false;
     } else {
         std::thread th00([]() {
-            process_thread(stream00, buffer00, handle00);
+            process_thread(buffer00, handle00);
         });
 
         db_thread00 = std::move(th00);
