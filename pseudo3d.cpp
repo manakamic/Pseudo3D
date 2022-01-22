@@ -8,6 +8,7 @@
 #include "polygon_dx.h"
 #include "shot.h"
 #include "pseudo3d.h"
+#include "enemy.h"
 #if defined(_DEBUG_3D)
 #include "utility.h"
 #include "DxLib.h"
@@ -55,7 +56,32 @@ bool pseudo3d::initialize(const double fov_y, const double near_z, const double 
 }
 
 void pseudo3d::update() {
+    if (camera == nullptr) {
+        return;
+    }
+
+    camera->look_at();
+
+    auto view_matrix = camera->get_matrix();
+
+#if defined(_USE_BILLBOARD)
+    auto inverse = view_matrix->get_inverse();
+
+    inverse.set_value(3, 0, 0.0);
+    inverse.set_value(3, 1, 0.0);
+    inverse.set_value(3, 2, 0.0);
+#endif
+
     for (auto&& polygon : polygon_list) {
+#if defined(_USE_BILLBOARD)
+        auto enemy_pointer = std::dynamic_pointer_cast<enemy>(polygon);
+
+        if (enemy_pointer != nullptr) {
+            enemy_pointer->set_billboard(true);
+            enemy_pointer->set_billboard_matrix(inverse);
+        }
+#endif
+
         polygon->update();
     }
 
@@ -63,31 +89,23 @@ void pseudo3d::update() {
         update_function(this);
     }
 
-    transform();
+    transform(view_matrix);
 
     if (late_update_function != nullptr) {
         late_update_function(this);
     }
 }
 
-void pseudo3d::transform() {
+void pseudo3d::transform(const std::shared_ptr<math::matrix44>& camera_matrix) {
     if (0 == polygon_list.size()) {
         return;
     }
 
-    if (camera == nullptr || perspective == nullptr || viewport == nullptr) {
+    if (camera_matrix == nullptr ||  perspective == nullptr || viewport == nullptr) {
         return;
     }
 
-    camera->look_at();
-
-    auto cam_mat = camera->get_matrix();
-
-    if (cam_mat == nullptr) {
-        return;
-    }
-
-    auto cam_pers_view_mat = (*cam_mat) * perspective_viewport;
+    auto cam_pers_view_mat = (*camera_matrix) * perspective_viewport;
 
 #if defined(_DEBUG_3D)
     debug_cam_pers_view_mat = cam_pers_view_mat;

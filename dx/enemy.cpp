@@ -10,6 +10,7 @@ enemy::enemy() : polygon_dx(polygon_dx::type_kind::enemy) {
     angle_y = 0.0;
     hit = false;
     end = false;
+    billboard = false;
 }
 
 void enemy::set_hit(const bool hit) {
@@ -55,6 +56,10 @@ void enemy::update() {
             world_matrix->transfer(world_position->get_x(),
                                    world_position->get_y() + half_size,
                                    world_position->get_z(), true);
+        }
+
+        if (billboard) {
+            *world_matrix = billboard_matrix * (*world_matrix);
         }
     }
 }

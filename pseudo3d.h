@@ -44,7 +44,7 @@ public:
     void set_late_function(const std::function<void(const pseudo3d* instance)> function) { late_update_function = function; }
 
 protected:
-    void transform();
+    void transform(const std::shared_ptr<math::matrix44>& camera_matrix);
 
     std::function<void(const pseudo3d* instance)> update_function;
     std::function<void(const pseudo3d* instance)> late_update_function;
