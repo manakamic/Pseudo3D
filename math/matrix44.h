@@ -1,16 +1,15 @@
 #pragma once
 
-#include <cstdint>
 #include <array>
 #include <tuple>
 
 namespace math {
     class vector4;
 
-    constexpr uint32_t row_max = 4;
-    constexpr uint32_t column_max = 4;
+    constexpr auto row_max = 4;
+    constexpr auto column_max = 4;
 
-    using matrix_array = std::array<std::array<double, column_max>, row_max>;
+    using matrix_array = std::array<std::array<double, row_max>, column_max>;
 
     class matrix44 {
     public:
@@ -29,11 +28,14 @@ namespace math {
         const matrix44 operator *(const matrix44 rhs) const;
         const matrix44 operator +(const vector4 rhs) const;
 
-        const double get_value(const uint32_t row, const uint32_t column) const { return row_column[row][column]; }
-        const void set_value(const uint32_t row, const uint32_t column, const double value) { row_column[row][column] = value; }
+        const double get_value(const int row, const int column) const { return row_column[row][column]; }
+        const void set_value(const int row, const int column, const double value) { row_column[row][column] = value; }
 
         void zero(matrix_array& target) const;
         void unit();
+
+        const double determinant() const;
+        const matrix44 get_inverse() const;
 
         void perspective(const double fov_y, const double aspect, const double near_z, const double far_z);
         void viewport(const double width, const double height/*, const double min_z, const double max_z*/);

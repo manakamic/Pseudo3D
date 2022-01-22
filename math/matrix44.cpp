@@ -14,7 +14,7 @@ namespace math {
     }
 
     void matrix44::zero(matrix_array& target) const {
-        for (auto i = 0; i < row_max; ++i) {
+        for (auto i = 0; i < column_max; ++i) {
             target[i].fill(0.0);
         }
     }
@@ -22,9 +22,66 @@ namespace math {
     void matrix44::unit() {
         zero(row_column);
 
-        for (auto i = 0; i < row_max; ++i) {
+        for (auto i = 0; i < column_max; ++i) {
             row_column[i][i] = 1.0;
         }
+    }
+
+    const double matrix44::determinant() const {
+        // ãŽOŠps—ñ‚ðì¬‚µ‚Äs—ñŽ®‚ð‹‚ß‚é
+        matrix_array upper_triangular = row_column;
+
+        for (auto i = 0; i < column_max; ++i) {
+            for (auto j = 0; j < row_max; ++j) {
+                if (i >= j) {
+                    continue;
+                }
+
+                auto coefficient = upper_triangular[j][i] / upper_triangular[i][i];
+
+                for (auto k = 0; k < row_max; ++k) {
+                    upper_triangular[j][k] -= upper_triangular[i][k] * coefficient;
+                }
+            }
+        }
+
+        auto determinant = 1.0;
+
+        for (auto i = 0; i < column_max; ++i) {
+            determinant *= upper_triangular[i][i];
+        }
+
+        return determinant;
+    }
+
+    const matrix44 matrix44::get_inverse() const {
+        // ‘|‚«o‚µ–@‚É‚æ‚é‹ts—ñ‚ÌŒvŽZ
+        matrix_array inverse{ {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}} };
+        matrix_array temporary = row_column;
+
+        for (auto i = 0; i < column_max; ++i) {
+            auto coefficient = 1.0 / temporary[i][i];
+
+            for (auto j = 0; j < row_max; ++j) {
+                temporary[i][j] *= coefficient;
+                inverse[i][j] *= coefficient;
+            }
+
+            for (auto j = 0; j < row_max; ++j) {
+                if (i == j) {
+                    continue;
+                }
+
+                coefficient = temporary[j][i];
+
+                for (auto k = 0; k < row_max; ++k) {
+                    temporary[j][k] -= temporary[i][k] * coefficient;
+                    inverse[j][k] -= inverse[i][k] * coefficient;
+                }
+            }
+        }
+
+        return matrix44(inverse);
     }
 
     void matrix44::perspective(const double fov_y, const double aspect, const double near_z, const double far_z) {
@@ -64,8 +121,8 @@ namespace math {
     const matrix44 matrix44::operator *(const matrix44 rhs) const {
         matrix_array result{ {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}} };
 
-        for (auto i = 0; i < row_max; ++i) {
-            for (auto j = 0; j < column_max; ++j) {
+        for (auto i = 0; i < column_max; ++i) {
+            for (auto j = 0; j < row_max; ++j) {
                 auto m = 0.0;
 
                 for (auto k = 0; k < 4; ++k) {
