@@ -124,4 +124,10 @@ namespace r3d {
         return true;
     }
 
+    math::vector4 camera::get_direction() const {
+        auto direction = *target - *position;
+
+        return direction.normalize();
+    }
+
 }

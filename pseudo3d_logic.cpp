@@ -92,6 +92,17 @@ void initialize_enemy(const std::shared_ptr<pseudo3d>&pseudo3d) {
 #endif
     auto enemy_num = math::utility::get_random(ENEMY_MIN, ENEMY_MAX);
     auto png_max = static_cast<int>(PNG_LIST.size()) - 1;
+    static auto is_left = false;
+    auto update_enemy = [](const polygon_dx* instance) {
+        auto dx_instance = const_cast<polygon_dx*>(instance);
+        auto enemy_instance = dynamic_cast<const enemy*>(dx_instance);
+
+        if (enemy_instance->get_hit()) {
+            return;
+        }
+
+        auto world_position = instance->get_world_position();
+    };
 
     for (auto i = 0; i < enemy_num; ++i) {
         std::shared_ptr<enemy> enemy_ptr(new enemy);
@@ -101,6 +112,7 @@ void initialize_enemy(const std::shared_ptr<pseudo3d>&pseudo3d) {
         auto offset = math::vector4(static_cast<double>(offset_x), 0.0, static_cast<double>(offset_z));
 
         enemy_ptr->initialize(PNG_LIST[png_index], ENEMY_SIZE, offset);
+        enemy_ptr->set_function(update_enemy);
         pseudo3d->add_polygon(enemy_ptr);
 
 #if defined(_USE_LIGHTING)

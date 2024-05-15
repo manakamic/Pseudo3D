@@ -4,6 +4,7 @@
 #include "pseudo3d.h"
 #include "shot.h"
 #include "shot_logic.h"
+#include "camera.h"
 
 namespace {
     constexpr auto SHOT_Y = ENEMY_SIZE / 2.0;
@@ -41,9 +42,8 @@ bool on_shot(const std::shared_ptr<pseudo3d>& pseudo3d, const math::vector4& cam
     }
 
     // カメラの方向ベクトル
-    auto dir = math::vector4(-camera_pos.get_x(), 0.0, -camera_pos.get_z());
-
-    dir.normalized();
+    auto camera = pseudo3d->get_camera();
+    auto dir = camera->get_direction();
 
     auto offset = math::vector4(camera_pos.get_x(), SHOT_Y, camera_pos.get_z()) + (dir * SHOT_OFFSET_SIZE);
 

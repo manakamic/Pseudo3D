@@ -140,6 +140,16 @@ namespace {
         return std::make_tuple(min_x, min_y, max_x, max_y);
     }
 
+    void clamp(double& value) {
+        if (value < 0.0) {
+            value = 0.0;
+        }
+
+        if (value > 1.0) {
+            value = 1.0;
+        }
+    }
+
     // 3 頂点内のポイントの uv 値を 面積比率で補間
     // z 値も同様の補間が必要なので一緒に計算をする
     // さらに uv 値はパースペクティブ テクスチャ マッピング処理になる様に計算
@@ -186,6 +196,10 @@ namespace {
         auto v = (uv0_v + uv1_v + uv2_v) / rate_w;
         // uv を求める面積割合で z 値も補間
         auto z = rate_0 * p0_z + rate_1 * p1_z + rate_2 * p2_z;
+
+        clamp(u);
+        clamp(v);
+        clamp(z);
 
 #if !defined(_USE_LIGHTING)
         return std::make_tuple(u, v, z);

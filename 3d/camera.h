@@ -32,6 +32,10 @@ namespace r3d {
         bool set_position(const double x, const double y, const double z);
         bool set_target(const double x, const double y, const double z);
 
+        math::vector4 get_direction() const;
+
+        const std::unique_ptr<math::vector4>& get_target() const { return target; }
+
         const std::shared_ptr<math::vector4> get_position() const { return position; }
         const std::shared_ptr<math::matrix44> get_matrix() const { return matrix; }
 
