@@ -54,7 +54,7 @@ namespace {
 
     void delete_thread(std::thread& th) {
         if (th.joinable()) {
-            th.join();
+            th.detach();
         }
     }
 
