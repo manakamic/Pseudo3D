@@ -37,7 +37,7 @@ namespace math {
         const double get_z() const { return z; }
         const double get_w() const { return w; }
 
-        const double lenght() const;
+        const double length() const;
 
         void normalized();
         const vector4 normalize() const;

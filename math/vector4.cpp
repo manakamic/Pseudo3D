@@ -33,25 +33,32 @@ namespace math {
         this->z += z;
     }
 
-    const double vector4::lenght() const {
+    const double vector4::length() const {
         return sqrt(x * x + y * y + z * z);
     }
 
     void vector4::normalized() {
-        auto len = lenght();
+        auto len = length();
 
-        x /= len;
-        y /= len;
-        z /= len;
+        if (len > 0.0) {
+            x /= len;
+            y /= len;
+            z /= len;
+        }
     }
 
     const vector4 vector4::normalize() const {
-        auto len = lenght();
-        auto nx = x / len;
-        auto ny = y / len;
-        auto nz = z / len;
+        auto len = length();
 
-        return vector4(nx, ny, nz);
+        if (len > 0.0) {
+            auto nx = x / len;
+            auto ny = y / len;
+            auto nz = z / len;
+
+            return vector4(nx, ny, nz);
+        }
+
+        return vector4(x, y, z);
     }
 
     const double vector4::dot(const vector4& rhs) const {
@@ -63,7 +70,7 @@ namespace math {
         auto cy = z * rhs.get_x() - x * rhs.get_z();
         auto cz = x * rhs.get_y() - y * rhs.get_x();
 
-        return vector4(cx, cy, cz);
+        return vector4(cx, cy, cz, 0.0);
     }
 
     const vector4 vector4::operator +(const vector4& rhs) const {

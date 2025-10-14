@@ -44,8 +44,6 @@ namespace {
 
         auto direction = math::vector4(-0.2, 0.2, 1.0);
 
-        direction.normalized();
-
         light_ptr->set_direction(direction.normalize());
 
         return true;
@@ -500,7 +498,7 @@ void rasterize::Draw(const std::array<std::shared_ptr<r3d::vertex>, 4>&vertices,
 
             auto p = math::vector4(static_cast<double>(x), static_cast<double>(y), 0.0f);
             auto u = 0.0; auto v = 0.0; auto z = 0.0;
-            auto depth_pos = y * height + x;
+            auto depth_pos = y * width + x;
             auto in = false;
 #if defined(_USE_LIGHTING)
             std::shared_ptr<math::vector4> position = nullptr;

@@ -29,12 +29,12 @@ namespace r3d {
 
     void camera::look_at() {
         auto axis_z = (*target) - (*position);
-        auto axis_x = up->cross(axis_z);
-        auto axis_y = axis_z.cross(axis_x);
-
-        axis_x.normalized();
-        axis_y.normalized();
         axis_z.normalized();
+        auto axis_x = up->cross(axis_z);
+        axis_x.normalized();
+        auto axis_y = axis_z.cross(axis_x);
+        axis_y.normalized();
+        
 
         math::matrix_array row_column{ {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}} };
 
@@ -76,7 +76,7 @@ namespace r3d {
 
         auto poly_normal = v01.cross(v02);
 
-        // 内積でカメラかリング
+        // 内積でカメラカリング
         if (inv_eye.dot(poly_normal) < 0.0) {
             return false; // 裏面を向いている
         }

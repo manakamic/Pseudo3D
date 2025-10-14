@@ -41,7 +41,7 @@ bool pseudo3d::initialize(const double fov_y, const double near_z, const double 
     polygon_list.clear();
 
     auto init_camera = camera->initialize();
-    auto aspect = height / width;
+    auto aspect = width / height;
     auto init_perspective = perspective->initialize(fov_y, aspect, near_z, far_z);
     auto init_viewport = viewport->initialize(width, height);
 
